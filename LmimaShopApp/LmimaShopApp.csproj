@@ -10,7 +10,7 @@
     <!-- يُستبدل تلقائياً بوسم الإصدار (v3.4.0) عند البناء في GitHub Actions -->
     <Version>3.4.0</Version>
     <!-- مستودع التحديثات (owner/repo) ومفتاح القراءة؛ المفتاح يُمرر فقط من أسرار GitHub عند البناء -->
-    <UpdateRepo Condition="'$(UpdateRepo)' == ''"></UpdateRepo>
+    <UpdateRepo Condition="'$(UpdateRepo)' == ''">saidsocial5-droid/LmimaShopApp</UpdateRepo>
     <UpdateToken Condition="'$(UpdateToken)' == ''"></UpdateToken>
   </PropertyGroup>
 
