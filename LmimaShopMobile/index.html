@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <meta name="theme-color" content="#1e3a8a">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <meta name="apple-mobile-web-app-title" content="LMIMA SHOP">
+
+  <title>LMIMA SHOP - منظومة نقاط البيع وإدارة المتجر</title>
+
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="icon" type="image/png" href="icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+  <!-- App Header -->
+
+  <header class="app-header">
+
+    <div class="header-brand">
+
+      <img src="logo.png" alt="Logo" class="header-logo" onerror="this.src='icon-192.png'">
+
+      <div class="header-title">
+
+        <h1 id="store-name-display">متجر LMIMA SHOP</h1>
+
+        <div class="header-subtitle">
+
+          <span id="header-status-badge" class="pulse-dot"></span>
+
+          <span id="header-subtitle-text">نظام البيع المتنقل الفوري</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="header-actions">
+
+      <button id="btn-header-qr-sync" class="header-btn" title="مسح باركود الربط بالحاسوب" style="background: #2563eb; color: white;">📷</button>
+
+      <button id="btn-open-conn-settings" class="header-btn" title="إعدادات الربط والاتصال بالحاسوب">📡</button>
+
+      <button id="btn-sync-now" class="header-btn" title="تحديث ومزامنة فورية">🔄</button>
+
+      <button id="btn-open-file" class="header-btn" title="استيراد ملف المتجر اليدوي">📂</button>
+
+      <input type="file" id="sync-file-input" accept=".json,.js" style="display: none;">
+
+    </div>
+
+  </header>
+
+  <!-- Top Update Notification Banner (شريط تحديث التطبيق التلقائي) -->
+
+  <div id="app-update-banner" class="app-update-banner" style="display: none;">
+
+    <div class="update-banner-content">
+
+      <span class="update-banner-icon">🚀</span>
+
+      <div class="update-banner-text">
+
+        <strong id="update-banner-title">يتوفر تحديث جديد للتطبيق (v1.5)</strong>
+
+        <span id="update-banner-desc">اضغط للتحديث وتثبيت أحدث المزايا فورياً</span>
+
+      </div>
+
+    </div>
+
+    <div class="update-banner-actions">
+
+      <button id="btn-update-now" class="btn-update-now">تحديث الآن ⬇️</button>
+
+      <button id="btn-dismiss-update" class="btn-update-dismiss" title="إغلاق">✕</button>
+
+    </div>
+
+  </div>
+
+  <!-- Live Sync Bar -->
+
+  <div class="sync-banner" id="btn-banner-open-conn" style="cursor: pointer;" title="انقر لفتح إعدادات الربط والمزامنة">
+
+    <div class="sync-status">
+
+      <span class="pulse-dot" id="sync-pulse"></span>
+
+      <span id="sync-status-text">جاري الاتصال بخادم المتجر...</span>
+
+    </div>
+
+    <div id="records-count-text" style="color: var(--text-muted); font-size: 11px;">0 منتج • 0 زبون • 0 ممون</div>
+
+  </div>
+
+  <!-- Main Content Screens -->
+
+  <main class="container">
+
+    <!-- ============================================== -->
+
+    <!-- 1. شاشة نقطة البيع (POS)                         -->
+
+    <!-- ============================================== -->
+
+    <section id="tab-pos" class="tab-screen active">
+
+      <!-- شريط البحث والباركود العلوي -->
+
+      <div class="pos-search-bar">
+
+        <div class="search-container" style="flex: 1; margin: 0;">
+
+          <span class="search-icon">🔍</span>
+
+          <input type="text" id="pos-search-input" class="search-input" placeholder="ابحث باسم السلعة أو امسح الباركود...">
+
+          <button id="btn-pos-clear-search" class="clear-search-btn" style="display: none;">✕</button>
+
+        </div>
+
+        <button id="btn-pos-toggle-camera" class="pos-camera-btn" title="ماسح الكاميرا السريع">
+
+          <span>📷</span>
+
+        </button>
+
+      </div>
+
+      <!-- عارض الكاميرا المدمج لنقطة البيع -->
+
+      <div id="pos-camera-container" class="pos-camera-box" style="display: none;">
+
+        <div id="pos-scanner-viewport"></div>
+
+        <div class="pos-camera-footer">
+
+          <span>وجه الكاميرا نحو باركود المنتج لإضافته فوراً للسلة</span>
+
+          <button id="btn-pos-close-camera" class="btn-close-camera">إغلاق الكاميرا ✕</button>
+
+        </div>
+
+      </div>
+
+      <!-- تصنيفات المنتجات السريعة (Chips) -->
+
+      <div class="chips-container" id="pos-category-chips">
+
+        <button class="chip active" data-cat="all">الكل</button>
+
+      </div>
+
+      <!-- شبكة منتجات البيع السريع -->
+
+      <div class="section-title">
+
+        <span>🛒 اختر المنتجات لإضافتها للسلة</span>
+
+        <span id="pos-items-count-badge" style="font-size: 11px; color: var(--text-muted);">0 منتج متاح</span>
+
+      </div>
+
+      <div id="pos-products-grid" class="pos-grid">
+
+        <!-- تدرج المنتجات عبر JS -->
+
+      </div>
+
+    </section>
+
+    <!-- ============================================== -->
+
+    <!-- 2. شاشة إدارة المنتجات والسلع (Products)          -->
+
+    <!-- ============================================== -->
+
+    <section id="tab-products" class="tab-screen">
+
+      <!-- أزرار الإجراءات والبحث والمسح -->
+
+      <div class="action-header-row" style="gap: 8px;">
+
+        <div class="search-container" style="flex: 1; margin: 0; position: relative;">
+
+          <span class="search-icon">🔍</span>
+
+          <input type="text" id="products-search-input" class="search-input" placeholder="ابحث بالاسم أو امسح الباركود...">
+
+          <button id="btn-products-clear-search" class="clear-search-btn" style="display: none; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 16px; color: var(--text-muted); cursor: pointer;">✕</button>
+
+        </div>
+
+        <button id="btn-products-toggle-camera" class="pos-camera-btn" title="مسح باركود المنتج بالكاميرا" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; border: none; border-radius: 12px; width: 44px; height: 44px; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);">
+
+          <span>📷</span>
+
+        </button>
+
+        <button id="btn-open-add-product" class="btn-primary-action" style="white-space: nowrap; height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px;">
+
+          <span>➕ إضافة</span>
+
+        </button>
+
+      </div>
+
+      <!-- عارض الكاميرا المدمج لصفحة المنتجات -->
+
+      <div id="products-camera-container" class="pos-camera-box" style="display: none; margin-bottom: 12px; border: 2px solid #0284c7; border-radius: 12px; overflow: hidden; background: #000;">
+
+        <div id="products-scanner-viewport"></div>
+
+        <div class="pos-camera-footer" style="padding: 10px; background: rgba(0,0,0,0.85); color: white; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+
+          <span>📷 وجه الكاميرا نحو باركود المنتج للبحث السريع</span>
+
+          <button id="btn-products-close-camera" class="btn-close-camera" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer;">إغلاق ✕</button>
+
+        </div>
+
+      </div>
+
+      <!-- تصنيفات المنتجات -->
+
+      <div class="chips-container" id="products-category-chips">
+
+        <button class="chip active" data-cat="all">الكل</button>
+
+      </div>
+
+      <div class="section-title">
+
+        <span>📦 قائمة منتجات المتجر (<span id="products-visible-count">0</span>)</span>
+
+        <span id="products-total-badge" style="font-size: 11px; color: var(--text-muted);">إجمالي: 0</span>
+
+      </div>
+
+      <!-- قائمة بطاقات المنتجات -->
+
+      <div id="products-list-container" class="items-list">
+
+        <!-- تدرج المنتجات عبر JS -->
+
+      </div>
+
+      <button id="btn-load-more-products" class="btn-load-more" style="display: none;">
+
+        <span>🔽 عرض المزيد من المنتجات</span>
+
+      </button>
+
+    </section>
+
+    <!-- ============================================== -->
+
+    <!-- 3. شاشة إدارة الزبناء والكريدي (Customers)       -->
+
+    <!-- ============================================== -->
+
+    <section id="tab-customers" class="tab-screen">
+
+      <!-- بطاقة إجمالي ديون الزبناء المعلقة -->
+
+      <div class="hero-card" style="background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #ea580c 100%);">
+
+        <div class="hero-header">
+
+          <span>👥 إجمالي ديون الزبناء المعلقة (الكريدي)</span>
+
+          <span id="customers-count-badge">0 زبون</span>
+
+        </div>
+
+        <div class="hero-main-amt" id="customers-total-debts-dh">0.00 د.م.</div>
+
+        <div class="hero-rial-tag">
+
+          <span>🪙</span>
+
+          <span id="customers-total-debts-rial">0 ريال</span>
+
+        </div>
+
+        <div class="hero-substats">
+
+          <div>مبالغ واجبة التحصيل من الزبناء</div>
+
+          <div style="font-weight: 700;">تذكير بنقرة واحدة عبر واتساب 💬</div>
+
+        </div>
+
+      </div>
+
+      <!-- شريط البحث وزر إضافة زبون -->
+
+      <div class="action-header-row">
+
+        <div class="search-container" style="flex: 1; margin: 0;">
+
+          <span class="search-icon">🔍</span>
+
+          <input type="text" id="customers-search-input" class="search-input" placeholder="ابحث باسم الزبون أو رقم الهاتف...">
+
+        </div>
+
+        <button id="btn-open-add-customer" class="btn-primary-action" style="white-space: nowrap;">
+
+          <span>➕ إضافة زبون</span>
+
+        </button>
+
+      </div>
+
+      <!-- فلترة الزبناء -->
+
+      <div class="chips-container" id="customers-filter-chips">
+
+        <button class="chip active" data-filter="all">الكل (<span id="cust-count-all">0</span>)</button>
+
+        <button class="chip" data-filter="debts">عليهم كريدي (<span id="cust-count-debts">0</span>)</button>
+
+        <button class="chip" data-filter="zero">بدون ديون (<span id="cust-count-zero">0</span>)</button>
+
+        <button class="chip" data-filter="over200">> 200 د.م.</button>
+
+      </div>
+
+      <!-- قائمة بطاقات الزبناء -->
+
+      <div id="customers-list-container" class="items-list">
+
+        <!-- تدرج بطاقات الزبناء عبر JS -->
+
+      </div>
+
+    </section>
+
+    <!-- ============================================== -->
+
+    <!-- 4. شاشة إدارة الممونين والشركات (Suppliers)       -->
+
+    <!-- ============================================== -->
+
+    <section id="tab-suppliers" class="tab-screen">
+
+      <!-- بطاقة إجمالي ديون الممونين -->
+
+      <div class="hero-card" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #0284c7 100%);">
+
+        <div class="hero-header">
+
+          <span>🚚 ديون الممونين والشركات المستحقة علينا</span>
+
+          <span id="suppliers-count-badge">0 ممون</span>
+
+        </div>
+
+        <div class="hero-main-amt" id="suppliers-total-debts-dh">0.00 د.م.</div>
+
+        <div class="hero-rial-tag">
+
+          <span>🪙</span>
+
+          <span id="suppliers-total-debts-rial">0 ريال</span>
+
+        </div>
+
+        <div class="hero-substats">
+
+          <div>مستحقات واجبة الأداء للموردين</div>
+
+          <div>متابعة الشركات والتسديد الفوري</div>
+
+        </div>
+
+      </div>
+
+      <!-- شريط البحث وزر إضافة ممون -->
+
+      <div class="action-header-row">
+
+        <div class="search-container" style="flex: 1; margin: 0;">
+
+          <span class="search-icon">🔍</span>
+
+          <input type="text" id="suppliers-search-input" class="search-input" placeholder="ابحث باسم الممون، الشركة، أو الهاتف...">
+
+        </div>
+
+        <button id="btn-open-add-supplier" class="btn-primary-action" style="white-space: nowrap;">
+
+          <span>➕ إضافة ممون</span>
+
+        </button>
+
+      </div>
+
+      <!-- فلترة الممونين -->
+
+      <div class="chips-container" id="suppliers-filter-chips">
+
+        <button class="chip active" data-filter="all">الكل (<span id="supp-count-all">0</span>)</button>
+
+        <button class="chip" data-filter="debts">لهم ديون مستحقة</button>
+
+        <button class="chip" data-filter="zero">تمت تسويتها</button>
+
+      </div>
+
+      <!-- قائمة بطاقات الممونين -->
+
+      <div id="suppliers-list-container" class="items-list">
+
+        <!-- تدرج بطاقات الممونين عبر JS -->
+
+      </div>
+
+    </section>
+
+    <!-- ============================================== -->
+
+    <!-- 5. شاشة التقارير والمزامنة (Dashboard & Sync)     -->
+
+    <!-- ============================================== -->
+
+    <section id="tab-dashboard" class="tab-screen">
+
+      <!-- Hero Card: إجمالي مبيعات اليوم -->
+
+      <div class="hero-card">
+
+        <div class="hero-header">
+
+          <span>📅 ملخص مبيعات اليوم (<span id="today-date-display">--</span>)</span>
+
+          <span id="last-sync-hour">--:--</span>
+
+        </div>
+
+        <div class="hero-main-amt" id="today-sales-dh">0.00 د.م.</div>
+
+        <div class="hero-rial-tag">
+
+          <span>🪙</span>
+
+          <span id="today-sales-rial">0 ريال</span>
+
+        </div>
+
+        <div class="hero-substats">
+
+          <div>
+
+            <div>صافي الربح التقديري:</div>
+
+            <strong id="today-profit-dh" style="color: #4ade80;">+0.00 د.م. (<span id="today-profit-rial">0 ريال</span>)</strong>
+
+          </div>
+
+          <div style="text-align: left;">
+
+            <div>الفواتير:</div>
+
+            <strong id="today-invoices-count">0 فاتورة</strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- شبكة المؤشرات السريعة -->
+
+      <div class="metrics-grid">
+
+        <div class="metric-card success">
+
+          <div class="metric-title">💵 مقبوضات نقدية (كاش)</div>
+
+          <div class="metric-value" id="today-cash-dh">0.00 د.م.</div>
+
+          <div class="metric-subvalue" id="today-cash-rial">0 ريال</div>
+
+        </div>
+
+        <div class="metric-card warning">
+
+          <div class="metric-title">📝 ديون مسجلة اليوم (كريدي)</div>
+
+          <div class="metric-value" id="today-credit-dh">0.00 د.م.</div>
+
+          <div class="metric-subvalue" id="today-credit-rial">0 ريال</div>
+
+        </div>
+
+      </div>
+
+      <!-- قائمة الفواتير الحديثة -->
+
+      <div class="section-title">
+
+        <span>🧾 آخر الفواتير المنفذة</span>
+
+        <span id="invoices-counter-badge" style="font-size: 12px; color: var(--text-muted);">0 فاتورة</span>
+
+      </div>
+
+      <div class="search-container">
+
+        <span class="search-icon">🔍</span>
+
+        <input type="text" id="invoice-search-input" class="search-input" placeholder="ابحث برقم الفاتورة أو اسم الزبون...">
+
+      </div>
+
+      <div id="invoices-list" class="items-list">
+
+        <!-- تدرج الفواتير عبر JS -->
+
+      </div>
+
+      <!-- إعدادات خادم المزامنة التلقائي المباشر -->
+
+      <div class="sync-config-card" style="margin-top: 20px;">
+
+        <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--primary);">
+
+          📡 المزامنة الفورية عبر Wi-Fi المباشر
+
+        </h3>
+
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+
+          يتصل هاتفك فورياً بخادم البرنامج بحاسوبك عبر نفس شبكة Wi-Fi لإرسال المبيعات وإضافة المنتجات وتحديث الديون في أجزاء من الثانية.
+
+        </p>
+
+        <div style="margin-top: 12px;">
+
+          <!-- زر مسح باركود الربط السريع في الكرت -->
+
+          <button id="btn-dash-scan-qr" class="btn-submit-large" style="margin-top: 0; margin-bottom: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8); display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; padding: 12px; box-shadow: 0 4px 10px rgba(37,99,235,0.25);">
+
+            <span style="font-size: 18px;">📷</span>
+
+            <span>مسح باركود الحاسوب للربط الفوري (QR)</span>
+
+          </button>
+
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-main);">عنوان الحاسوب (IP:Port):</label>
+
+          <div class="sync-input-row" style="margin-bottom: 8px;">
+
+            <input type="text" id="sync-server-ip" class="sync-text-input" value="192.168.11.117:8080" placeholder="192.168.11.117:8080">
+
+            <button id="btn-test-server-sync" class="btn-primary-action" style="white-space: nowrap;">⚡ اتصال وفحص</button>
+
+          </div>
+
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-main);">رمز الاقتران (Pairing Code):</label>
+
+          <div class="sync-input-row" style="margin-bottom: 8px;">
+
+            <input type="text" id="sync-dash-pairing-code" class="sync-text-input" value="" placeholder="رمز الاقتران" style="font-weight: 800; text-align: center; letter-spacing: 2px;">
+
+            <button id="btn-dash-pair-device" class="btn-primary-action" style="background: #0d9488; white-space: nowrap;">🔗 إقران</button>
+
+          </div>
+
+          <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+
+            <button id="btn-dash-reconnect" class="btn-secondary" style="flex: 1; background: #475569; color: white; border: none; font-weight: 700; padding: 10px; font-size: 12px; border-radius: 8px; cursor: pointer;">
+
+              🔄 إعادة الربط
+
+            </button>
+
+            <button id="btn-dash-refresh-sync" class="btn-secondary" style="flex: 1; background: #0284c7; color: white; border: none; font-weight: 700; padding: 10px; font-size: 12px; border-radius: 8px; cursor: pointer;">
+
+              📥 تحيين البيانات
+
+            </button>
+
+          </div>
+
+          <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+
+            <button id="btn-auto-discover-pc" class="btn-secondary" style="flex: 1; background: #16a34a; color: white; border: none; font-size: 12px; font-weight: bold; padding: 9px; border-radius: 8px; cursor: pointer;">🔍 بحث تلقائي بالشبكة</button>
+
+            <button id="btn-dash-import-file" class="btn-secondary" style="background: #64748b; color: white; border: none; font-size: 12px; font-weight: bold; padding: 9px 12px; border-radius: 8px; cursor: pointer;">📁 استيراد ملف</button>
+
+          </div>
+
+        </div>
+
+        <div class="settings-row" style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+
+          <div>
+
+            <div class="settings-label">حالة الاتصال المباشر</div>
+
+            <div class="settings-desc" id="server-status-desc">جاري الفحص...</div>
+
+          </div>
+
+          <span class="badge badge-cash" id="server-status-badge">نشط</span>
+
+        </div>
+
+        <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+
+          <span>تحديث تلقائي مستمر كل 6 ثوانٍ:</span>
+
+          <input type="checkbox" id="chk-auto-sync-loop" checked style="width: 18px; height: 18px; accent-color: var(--primary-accent);">
+
+        </div>
+
+      </div>
+
+      <!-- المزامنة عبر Google Drive والملف الاحتياطي -->
+
+      <div class="sync-config-card">
+
+        <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--primary-accent);">
+
+          ☁️ ملف المزامنة Google Drive
+
+        </h3>
+
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">
+
+          يحفظ البرنامج نسخة محدثة دوماً من ملف <code>lmima_mobile_sync.json</code> بمجلد Drive للاستخدام عند عدم توفر شبكة Wi-Fi.
+
+        </p>
+
+        <button id="btn-settings-pick-file" class="btn-secondary" style="background: var(--primary-accent); color: white; border: none; margin-bottom: 8px; width: 100%;">
+
+          <span>📂 اختيار ملف المزامنة من Drive أو الهاتف</span>
+
+        </button>
+
+        <button id="btn-export-drive-photos" class="btn-secondary" style="background: #059669; color: white; border: none; margin-bottom: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700;">
+
+          <span>☁️ رفع صور المنتجات إلى Google Drive (<span id="pending-drive-photos-count">0</span> معلقة)</span>
+
+        </button>
+
+        <div class="settings-row">
+
+          <div>
+
+            <div class="settings-label">طابور العمليات غير المتزامنة (Offline)</div>
+
+            <div class="settings-desc" id="offline-queue-desc">كل العمليات متزامنة ومسجلة بحاسوبك 🟢</div>
+
+          </div>
+
+          <button id="btn-flush-offline-queue" class="badge badge-cash" style="cursor: pointer; border: none;">0 عملية</button>
+
+        </div>
+
+        <div class="settings-row">
+
+          <div>
+
+            <div class="settings-label">📤 تصدير العمليات المعلقة إلى Google Drive</div>
+
+            <div class="settings-desc">عند العمل خارج المحل: احفظ الملف في مجلد المتجر على Google Drive وسيستورده الحاسوب تلقائياً دون تكرار</div>
+
+          </div>
+
+          <button id="btn-export-pending-drive" class="badge badge-credit" style="cursor: pointer; border: none;">تصدير</button>
+
+        </div>
+
+      </div>
+
+      <!-- بطاقة تحديث التطبيق التلقائي وإصدار البرنامج -->
+
+      <div class="sync-config-card" style="margin-top: 14px;">
+
+        <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--primary-accent); display: flex; align-items: center; justify-content: space-between;">
+
+          <span>🚀 تحديث التطبيق التلقائي</span>
+
+          <span class="badge badge-cash" id="app-version-badge" style="font-size: 11px;">v3.4.0</span>
+
+        </h3>
+
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">
+
+          يقوم التطبيق بفحص التحديثات الجديدة تلقائياً من خادم المتجر وتحميل أحدث المزايا وتثبيت ملف APK بضغطة واحدة.
+
+        </p>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+
+          <button id="btn-check-updates-manual" class="btn-secondary" style="flex: 1; background: var(--primary); color: white; border: none; font-weight: 700; padding: 10px;">
+
+            <span>🔄 فحص التحديثات الآن</span>
+
+          </button>
+
+          <button id="btn-download-apk-manual" class="btn-secondary" style="background: #059669; color: white; border: none; font-weight: 700; padding: 10px; white-space: nowrap;">
+
+            <span>⬇️ تنزيل APK</span>
+
+          </button>
+
+        </div>
+
+        <div class="settings-row" style="padding-top: 8px; border-top: 1px dashed var(--border-color);">
+
+          <div>
+
+            <div class="settings-label">فحص التحديثات التلقائي عند فتح التطبيق</div>
+
+            <div class="settings-desc" id="update-status-desc">مفعل تلقائياً مع خادم المحل 🟢</div>
+
+          </div>
+
+          <input type="checkbox" id="chk-auto-update" checked style="width: 18px; height: 18px; accent-color: var(--primary-accent);">
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+
+  <!-- شريط السلة العائم السريع (Floating Cart Bar)     -->
+
+  <!-- ============================================== -->
+
+  <div id="floating-cart-bar" class="floating-cart-bar" style="display: none;">
+
+    <div class="cart-bar-info" id="btn-open-cart-from-bar">
+
+      <div class="cart-bar-icon-box">
+
+        <span>🛒</span>
+
+        <span class="cart-badge-count" id="cart-bar-count">0</span>
+
+      </div>
+
+      <div>
+
+        <div class="cart-bar-total" id="cart-bar-total-dh">0.00 د.م.</div>
+
+        <div class="cart-bar-rial" id="cart-bar-total-rial">0 ريال</div>
+
+      </div>
+
+    </div>
+
+    <button id="btn-cart-bar-checkout" class="cart-bar-action-btn">
+
+      <span>مراجعة السلة والإنهاء ⚡</span>
+
+    </button>
+
+  </div>
+
+  <!-- ============================================== -->
+
+  <!-- النوافذ المنبثقة التفاعلية (Modals)              -->
+
+  <!-- ============================================== -->
+
+  <!-- Modal: إعدادات الربط والاتصال بالحاسوب والمزامنة (Connection Settings Modal) -->
+
+    <!-- Modal: إعدادات الربط والمزامنة بالحاسوب (Connection Settings Modal) -->
+
+  <div id="modal-connection-settings" class="modal-overlay">
+
+    <div class="modal-content modal-large">
+
+      <div class="modal-header">
+
+        <h3>📡 إعدادات الربط والمزامنة مع برنامج الحاسوب</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-connection-settings')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <!-- ============================================== -->
+
+        <!-- 1. الربط عبر مسح الباركود (QR Code Scanning)      -->
+
+        <!-- ============================================== -->
+
+        <div class="sync-config-card" style="margin-top: 0; margin-bottom: 15px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 2px solid #3b82f6;">
+
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+
+            <h4 style="font-size: 15px; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 6px;">
+
+              <span>📷 1. الربط السريع عبر مسح رمز QR</span>
+
+            </h4>
+
+            <span class="badge" style="background: #2563eb; color: white; font-size: 11px; padding: 2px 8px;">الأسرع والأنصح به ⚡</span>
+
+          </div>
+
+          <p style="font-size: 12px; color: #1e3a8a; line-height: 1.5; margin-bottom: 12px;">
+
+            امسح رمز QR المعروض في شاشة برنامج الحاسوب بكاميرا الهاتف ليتم التعرف على الحاسوب والاقتران وتحديث البيانات فوراً دون إدخال أي أرقام!
+
+          </p>
+
+          <button id="btn-modal-start-qr-scan" class="btn-submit-large" style="margin-top: 0; background: linear-gradient(135deg, #2563eb, #1d4ed8); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+
+            <span style="font-size: 20px;">📷</span>
+
+            <span style="font-size: 15px; font-weight: 800;">تشغيل الكاميرا ومسح باركود الحاسوب</span>
+
+          </button>
+
+        </div>
+
+        <!-- ============================================== -->
+
+        <!-- 2. التحديث والمزامنة التلقائية (Auto-Sync)         -->
+
+        <!-- ============================================== -->
+
+        <div class="sync-config-card" style="margin-bottom: 15px; background: #f0fdf4; border: 1.5px solid #86efac;">
+
+          <h4 style="font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+
+            <span>🔄 2. التحديث والمزامنة التلقائية (Auto-Sync)</span>
+
+          </h4>
+
+          <p style="font-size: 12px; color: #15803d; line-height: 1.5; margin-bottom: 10px;">
+
+            يمكن للتطبيق البحث التلقائي عن الحاسوب بالشبكة والمزامنة اللحظية مع كل عملية بيع.
+
+          </p>
+
+          <!-- زر البحث التلقائي الذكي -->
+
+          <button id="btn-modal-auto-discover" class="btn-secondary" style="width: 100%; background: #16a34a; color: white; border: none; font-size: 13px; font-weight: bold; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px;">
+
+            <span>🔍 بحث تلقائي ذكي عن الحاسوب بالشبكة المحلية</span>
+
+          </button>
+
+          <div id="auto-discover-progress-text" style="display: none; font-size: 12px; color: #166534; font-weight: 700; text-align: center; margin-bottom: 8px;">
+
+            جاري فحص الشبكة...
+
+          </div>
+
+          <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #bbf7d0; display: flex; flex-direction: column; gap: 8px;">
+
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+
+              <span style="font-size: 13px; font-weight: 700; color: #166534;">تفعيل المزامنة التلقائية المستمرة:</span>
+
+              <input type="checkbox" id="chk-auto-sync-modal" checked style="width: 20px; height: 20px; accent-color: #16a34a;">
+
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-muted); border-top: 1px dashed #dcfce7; padding-top: 6px;">
+
+              <span>دورة التحديث التلقائي:</span>
+
+              <select id="select-auto-sync-interval" class="form-select" style="width: auto; padding: 4px 8px; font-size: 12px; font-weight: 700;">
+
+                <option value="live">⚡ لحظي عند أي تغيير بالحاسوب (Live Stream)</option>
+
+                <option value="15">⏱️ كل 15 ثانية</option>
+
+                <option value="30">⏱️ كل 30 ثانية</option>
+
+                <option value="60">⏱️ كل دقيقة</option>
+
+                <option value="300">⏱️ كل 5 دقائق</option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+
+        <!-- 3. التحديث والربط اليدوي (Manual Update)          -->
+
+        <!-- ============================================== -->
+
+        <div class="sync-config-card" style="margin-bottom: 15px; background: #fafafa; border: 1.5px solid #e2e8f0;">
+
+          <h4 style="font-size: 14px; font-weight: 800; color: #334155; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+
+            <span>⚙️ 3. التحديث والربط اليدوي (Manual Update)</span>
+
+          </h4>
+
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
+
+            أدخل عنوان الـ IP الظاهر في شاشة الحاسوب ورمز الاقتران يدوياً، أو استورد ملف البيانات يدوياً.
+
+          </p>
+
+          <!-- حقل IP الحاسوب -->
+
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 4px;">عنوان خادم الحاسوب (IP:Port):</label>
+
+          <div class="sync-input-row" style="margin-bottom: 10px;">
+
+            <input type="text" id="sync-modal-server-ip" class="sync-text-input" placeholder="192.168.11.117:8080" style="font-size: 15px; font-weight: 700;">
+
+            <button id="btn-modal-test-ping" class="btn-primary-action" style="white-space: nowrap;">⚡ فحص IP</button>
+
+          </div>
+
+          <!-- حقل كود الاقتران -->
+
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 4px;">رمز الاقتران (Pairing Code):</label>
+
+          <div class="sync-input-row" style="margin-bottom: 12px;">
+
+            <input type="text" id="sync-modal-pairing-code" class="sync-text-input" value="" placeholder="رمز الاقتران" style="font-size: 16px; font-weight: 800; text-align: center; letter-spacing: 2px;">
+
+            <button id="btn-modal-pair-device" class="btn-primary-action" style="background: #0d9488; white-space: nowrap;">🔗 إقران الهاتف</button>
+
+          </div>
+
+          <!-- أزرار الإجراءات اليدوية -->
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+
+            <button id="btn-modal-connect" class="btn-submit-large" style="margin-top: 0; background: #3b82f6; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;">
+
+              <span>⚡</span>
+
+              <span>ربط واتصال يدوي بالحاسوب (Connect)</span>
+
+            </button>
+
+            <div style="display: flex; gap: 8px;">
+
+              <button id="btn-modal-reconnect" class="btn-secondary" style="flex: 1; background: #475569; color: white; border: none; font-weight: 700; padding: 11px; font-size: 13px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+
+                <span>🔄</span>
+
+                <span>إعادة الربط (Reconnect)</span>
+
+              </button>
+
+              <button id="btn-modal-refresh-sync" class="btn-secondary" style="flex: 1; background: #0284c7; color: white; border: none; font-weight: 700; padding: 11px; font-size: 13px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+
+                <span>📥</span>
+
+                <span>تحيين البيانات الآن</span>
+
+              </button>
+
+            </div>
+
+            <!-- زر استيراد ملف المتجر بدون شبكة -->
+
+            <button id="btn-modal-import-file" class="btn-secondary" style="width: 100%; background: #64748b; color: white; border: none; font-weight: 700; padding: 10px; font-size: 13px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px;">
+
+              <span>📁</span>
+
+              <span>استيراد ملف المتجر يدوياً (Offline File: lmima_mobile_sync.json)</span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+
+        <!-- 4. لوحة تشخيص حالة الاتصال المباشرة                 -->
+
+        <!-- ============================================== -->
+
+        <div class="sync-config-card">
+
+          <h4 style="font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 10px;">
+
+            📊 لوحة تشخيص الاتصال اللحظية
+
+          </h4>
+
+          <div class="settings-row" style="padding: 6px 0;">
+
+            <div class="settings-label">خادم الكاشير (HTTP Server :8080)</div>
+
+            <span class="badge badge-cash" id="diag-http-badge">جاري الفحص...</span>
+
+          </div>
+
+          <div class="settings-row" style="padding: 6px 0;">
+
+            <div class="settings-label">بث التحديثات الفوري (SSE Live Stream)</div>
+
+            <span class="badge badge-cash" id="diag-sse-badge">متصل 🟢</span>
+
+          </div>
+
+          <div class="settings-row" style="padding: 6px 0;">
+
+            <div class="settings-label">ماسح الباركود اللاسلكي (SignalR :8081)</div>
+
+            <span class="badge badge-cash" id="diag-signalr-badge">متصل 🟢</span>
+
+          </div>
+
+          <div class="settings-row" style="padding: 6px 0;">
+
+            <div class="settings-label">صلاحية التوكن والاقتران</div>
+
+            <span class="badge badge-cash" id="diag-token-badge">موثق ✅</span>
+
+          </div>
+
+          <div class="settings-row" style="padding: 6px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+
+            <div>
+
+              <div class="settings-label">طابور العمليات المعلقة (Offline Queue)</div>
+
+              <div class="settings-desc" id="diag-queue-desc">كل العمليات متزامنة</div>
+
+            </div>
+
+            <button id="btn-diag-flush-queue" class="badge badge-cash" style="cursor: pointer; border: none;">0 معلقة</button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn-submit-large" onclick="closeModal('modal-connection-settings')" style="margin-top: 0; background: #64748b;">
+
+          <span>إغلاق النافذة ✕</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal: مسح باركود الربط مع الحاسوب بالكاميرا -->
+
+  <div id="modal-qr-connection-scanner" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 440px; text-align: center;">
+
+      <div class="modal-header">
+
+        <h3>📷 مسح باركود الربط مع الحاسوب</h3>
+
+        <button class="modal-close-btn" id="btn-close-qr-scanner-x">✕</button>
+
+      </div>
+
+      <div class="modal-body" style="padding: 14px;">
+
+        <div id="qr-connection-viewport" style="width: 100%; min-height: 280px; background: #000; border-radius: 12px; overflow: hidden; position: relative; margin: 0 auto;"></div>
+
+        <div style="margin-top: 14px; font-size: 14px; font-weight: 800; color: #1e293b;">
+
+          وجه الكاميرا نحو رمز QR الظاهر في شاشة برنامج الحاسوب
+
+        </div>
+
+        <p style="font-size: 12px; color: #64748b; margin-top: 4px; line-height: 1.5;">
+
+          سيتم قراءة عنوان الحاسوب ورمز الاقتران والربط اللحظي فوراً دون إدخال أي أرقام!
+
+        </p>
+
+        <div id="qr-scan-feedback" style="display: none; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-top: 8px;"></div>
+
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 8px;">
+
+        <button type="button" id="btn-close-qr-scanner-btn" class="btn-secondary" style="flex: 1; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+
+          <span>إلغاء وإغلاق ✕</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 1: درج ومراجعة السلة (Cart Drawer Modal) -->
+
+  <div id="modal-cart" class="modal-overlay">
+
+    <div class="modal-content modal-large">
+
+      <div class="modal-header">
+
+        <h3>🛒 سلة المبيعات (<span id="modal-cart-items-count">0</span> عنصر)</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-cart')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <!-- اختيار الزبون -->
+
+        <div class="cart-customer-section">
+
+          <label class="form-label">الزبون المشتري:</label>
+
+          <div style="display: flex; gap: 8px;">
+
+            <select id="cart-customer-select" class="form-select" style="flex: 1;">
+
+              <option value="زبون نقدي عابر">زبون نقدي عابر (افتراضي)</option>
+
+              <!-- يدرج باقي الزبناء عبر JS -->
+
+            </select>
+
+            <button id="btn-quick-add-cust-from-cart" class="btn-secondary" style="padding: 0 12px; white-space: nowrap;">➕ زبون</button>
+
+          </div>
+
+        </div>
+
+        <!-- اختيار طريقة الدفع (كاش أو كريدي) -->
+
+        <div id="cart-payment-type-box" class="cart-payment-toggle" style="display: none;">
+
+          <div class="form-label">طريقة الأداء المطلوبة:</div>
+
+          <div class="payment-pills">
+
+            <button class="payment-pill active" data-pay="cash">💵 أداء نقدي (كاش)</button>
+
+            <button class="payment-pill" data-pay="credit">📝 تسجيل بالكريدي (دين)</button>
+
+          </div>
+
+          <div id="cart-credit-warning" class="cart-credit-notice" style="display: none;">
+
+            ⚠️ سيتم قيد الفاتورة بالكامل على دين الزبون.
+
+          </div>
+
+        </div>
+
+        <!-- قائمة عناصر السلة -->
+
+        <div class="section-title" style="margin-top: 14px; margin-bottom: 8px;">
+
+          <span>السلع المضافة:</span>
+
+          <button id="btn-clear-cart" class="btn-link-danger">🗑️ تفريغ السلة</button>
+
+        </div>
+
+        <div id="cart-items-list" class="cart-items-container">
+
+          <!-- عناصر السلة عبر JS -->
+
+        </div>
+
+        <!-- إجمالي السلة -->
+
+        <div class="cart-totals-summary">
+
+          <div class="totals-row">
+
+            <span>مجموع السلع:</span>
+
+            <span id="cart-subtotal-dh" style="font-weight: 700;">0.00 د.م.</span>
+
+          </div>
+
+          <div class="totals-row highlight">
+
+            <span>المبلغ الإجمالي المستحق:</span>
+
+            <div style="text-align: left;">
+
+              <div id="cart-grand-dh" style="font-size: 20px; font-weight: 800; color: var(--primary-accent);">0.00 د.م.</div>
+
+              <div id="cart-grand-rial" style="font-size: 13px; color: #b45309;">0 ريال</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button id="btn-proceed-checkout" class="btn-submit-large">
+
+          <span>إتمام الدفع وإنهاء البيع ⚡</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 2: نافذة الدفع واحتساب الصرف (Checkout Modal) -->
+
+  <div id="modal-checkout" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h3>💳 إنهاء البيع وتسجيل الفاتورة</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-checkout')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <!-- ملخص المستحق -->
+
+        <div class="checkout-due-banner">
+
+          <div>المبلغ المطلوب:</div>
+
+          <div class="checkout-due-dh" id="checkout-due-dh">0.00 د.م.</div>
+
+          <div class="checkout-due-rial" id="checkout-due-rial">0 ريال</div>
+
+          <div id="checkout-cust-badge" style="font-size: 12px; margin-top: 4px; color: #e2e8f0;">الزبون: زبون نقدي</div>
+
+        </div>
+
+        <!-- قسم الدفع النقدي -->
+
+        <div id="checkout-cash-section">
+
+          <label class="form-label" style="font-weight: 700;">المبلغ المستلم من الزبون (د.م.):</label>
+
+          <div style="position: relative;">
+
+            <input type="text" id="checkout-paid-input" class="form-input-number" readonly value="0.00">
+
+          </div>
+
+          <!-- أزرار الاختصار السريع للنقود مع الصور -->
+
+          <div class="quick-cash-container">
+
+            <div class="quick-cash-row-notes">
+
+              <button type="button" class="quick-cash-btn" data-amt="200" title="200 درهم">
+
+                <img src="cash/cash_200.jpg" alt="200" class="cash-thumb banknote-thumb">
+
+                <span>200</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="100" title="100 درهم">
+
+                <img src="cash/cash_100.jpg" alt="100" class="cash-thumb banknote-thumb">
+
+                <span>100</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="50" title="50 درهم">
+
+                <img src="cash/cash_50.jpg" alt="50" class="cash-thumb banknote-thumb">
+
+                <span>50</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="20" title="20 درهم">
+
+                <img src="cash/cash_20.jpg" alt="20" class="cash-thumb banknote-thumb">
+
+                <span>20</span>
+
+              </button>
+
+            </div>
+
+            <div class="quick-cash-row-coins">
+
+              <button type="button" class="quick-cash-btn" data-amt="10" title="10 دراهم">
+
+                <img src="cash/cash_10.jpg" alt="10" class="cash-thumb coin-thumb">
+
+                <span>10</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="5" title="5 دراهم">
+
+                <img src="cash/cash_5.jpg" alt="5" class="cash-thumb coin-thumb">
+
+                <span>5</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="2" title="درهمان (2)">
+
+                <img src="cash/cash_2.jpg" alt="2" class="cash-thumb coin-thumb">
+
+                <span>2</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="1" title="درهم واحد (1)">
+
+                <img src="cash/cash_1.jpg" alt="1" class="cash-thumb coin-thumb">
+
+                <span>1</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn" data-amt="0.5" title="0.5 درهم (50 فرنك)">
+
+                <img src="cash/cash_05.jpg" alt="0.5" class="cash-thumb coin-thumb">
+
+                <span>0.5</span>
+
+              </button>
+
+              <button type="button" class="quick-cash-btn quick-cash-exact" data-amt="exact" title="المبلغ بالضبط">
+
+                <img src="cash/cash_exact.jpg" alt="تماماً" class="cash-thumb exact-thumb">
+
+                <span>تماماً</span>
+
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- لوحة المفاتيح الرقمية اللمسية المدمجة -->
+
+          <div class="pos-keypad">
+
+            <button class="keypad-btn" data-key="1">1</button>
+
+            <button class="keypad-btn" data-key="2">2</button>
+
+            <button class="keypad-btn" data-key="3">3</button>
+
+            <button class="keypad-btn btn-keypad-action" data-key="C">C</button>
+
+            <button class="keypad-btn" data-key="4">4</button>
+
+            <button class="keypad-btn" data-key="5">5</button>
+
+            <button class="keypad-btn" data-key="6">6</button>
+
+            <button class="keypad-btn btn-keypad-action" data-key="back">⌫</button>
+
+            <button class="keypad-btn" data-key="7">7</button>
+
+            <button class="keypad-btn" data-key="8">8</button>
+
+            <button class="keypad-btn" data-key="9">9</button>
+
+            <button class="keypad-btn" data-key=".">.</button>
+
+            <button class="keypad-btn" data-key="0">0</button>
+
+            <button class="keypad-btn" data-key="00">00</button>
+
+            <button class="keypad-btn btn-keypad-exact" data-key="exact" style="grid-column: span 2;">تماماً</button>
+
+          </div>
+
+          <!-- شريط احتساب الصرف والباقي -->
+
+          <div class="checkout-change-banner" id="checkout-change-banner">
+
+            <div>الباقي للزبون (الصرف):</div>
+
+            <div class="checkout-change-dh" id="checkout-change-dh">0.00 د.م.</div>
+
+            <div class="checkout-change-rial" id="checkout-change-rial">0 ريال</div>
+
+          </div>
+
+        </div>
+
+        <!-- قسم البيع بالكريدي -->
+
+        <div id="checkout-credit-section" style="display: none;">
+
+          <div class="credit-summary-card">
+
+            <div style="font-size: 14px; font-weight: 800; color: #b91c1c; margin-bottom: 6px;">
+
+              📝 بيع بالكريدي (على الحساب)
+
+            </div>
+
+            <div style="font-size: 13px; line-height: 1.8;">
+
+              الزبون: <strong id="credit-card-cust-name">--</strong><br>
+
+              الدين الحالي قبل البيع: <span id="credit-card-old-debt">0.00 د.م.</span><br>
+
+              مبلغ هذه الفاتورة: <strong id="credit-card-sale-amt" style="color: #b91c1c;">0.00 د.م.</strong><br>
+
+              <strong>إجمالي الدين الجديد بعد البيع:</strong> <strong id="credit-card-new-debt" style="color: #b91c1c; font-size: 16px;">0.00 د.م.</strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button id="btn-confirm-checkout" class="btn-submit-large">
+
+          <span>✅ تأكيد وحفظ الفاتورة</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 3: معاينة الفاتورة وإرسالها واتساب (Receipt Modal) -->
+
+  <div id="modal-receipt" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h3>🧾 فاتورة البيع</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-receipt')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <div class="receipt-paper" id="receipt-paper">
+
+          <div class="receipt-title" id="rec-store-name">متجر LMIMA SHOP</div>
+
+          <div class="receipt-sub" id="rec-store-phone">هاتف المتجر</div>
+
+          <div class="receipt-divider">-----------------------------</div>
+
+          <div class="receipt-row"><span>رقم الفاتورة:</span><strong id="rec-inv-id">#000</strong></div>
+
+          <div class="receipt-row"><span>التاريخ:</span><span id="rec-inv-date">--</span></div>
+
+          <div class="receipt-row"><span>الزبون:</span><strong id="rec-inv-customer">--</strong></div>
+
+          <div class="receipt-row"><span>طريقة الدفع:</span><span id="rec-inv-method">--</span></div>
+
+          <div class="receipt-divider">-----------------------------</div>
+
+          <div id="rec-items-list" class="rec-items-list">
+
+            <!-- عناصر الفاتورة -->
+
+          </div>
+
+          <div class="receipt-divider">-----------------------------</div>
+
+          <div class="receipt-row bold"><span>الإجمالي:</span><strong id="rec-total-dh">0.00 د.م.</strong></div>
+
+          <div class="receipt-row"><span>بالريال:</span><span id="rec-total-rial">0 ريال</span></div>
+
+          <div class="receipt-row"><span>المدفوع:</span><span id="rec-paid-dh">0.00 د.م.</span></div>
+
+          <div class="receipt-row"><span>الباقي (الصرف):</span><span id="rec-change-dh">0.00 د.م.</span></div>
+
+          <div class="receipt-divider">-----------------------------</div>
+
+          <div class="receipt-sub" style="margin-top: 6px;">شكراً لزيارتكم • نتمنى لكم يوماً سعيداً</div>
+
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+
+          <button id="btn-share-receipt-wa" class="action-btn btn-whatsapp" style="flex: 1;">
+
+            <span>💬 إرسال عبر واتساب</span>
+
+          </button>
+
+          <button id="btn-print-receipt" class="action-btn" style="flex: 1; background: var(--primary); color: white;">
+
+            <span>🖨️ طباعة</span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn-submit-large" onclick="closeModal('modal-receipt')">
+
+          <span>🛒 بدء عملية بيع جديدة</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 4: إضافة وتعديل منتج (Product Modal) -->
+
+  <div id="modal-product" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h3 id="modal-product-title">➕ إضافة منتج جديد</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-product')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="prod-id" value="0">
+
+        <!-- تنبيه في حال كان المنتج منسوخاً -->
+
+        <div id="prod-modal-clone-hint" class="clone-badge-notice" style="display: none;">
+
+          📋 <strong>نسخ منتج:</strong> تم استنساخ بيانات المنتج. يمكنك تعديل الاسم أو توليد باركود جديد، ثم الضغط على حفظ.
+
+        </div>
+
+        <!-- الباركود مع زر المسح بالكاميرا وزر التوليد -->
+
+        <div class="form-group">
+
+          <label class="form-label">باركود المنتج:</label>
+
+          <div style="display: flex; gap: 8px;">
+
+            <input type="text" id="prod-barcode" class="form-input" placeholder="امسح أو اكتب الباركود...">
+
+            <button id="btn-scan-prod-barcode" class="btn-secondary" type="button" title="مسح بالكاميرا" style="display: flex; align-items: center; gap: 4px; background: var(--primary-accent); color: white; border: none; font-weight: 700; white-space: nowrap; padding: 0 12px;">
+
+              <span>📷</span>
+
+              <span>مسح</span>
+
+            </button>
+
+            <button id="btn-generate-barcode" class="btn-secondary" type="button" title="توليد باركود تلقائي" style="display: flex; align-items: center; gap: 4px; background: #0284c7; color: white; border: none; font-weight: 700; white-space: nowrap; padding: 0 12px;">
+
+              <span>🎲</span>
+
+              <span>توليد</span>
+
+            </button>
+
+          </div>
+
+          <!-- عارض الكاميرا المدمج لمسح باركود المنتج -->
+
+          <div id="prod-camera-container" class="pos-camera-box" style="display: none; margin-top: 10px;">
+
+            <div id="prod-scanner-viewport" style="width: 100%; min-height: 200px;"></div>
+
+            <div class="pos-camera-footer">
+
+              <span>وجه الكاميرا نحو باركود المنتج لقراءته تلقائياً</span>
+
+              <button id="btn-close-prod-camera" class="btn-close-camera" type="button">إلغاء ✕</button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- اسم المنتج -->
+
+        <div class="form-group">
+
+          <label class="form-label">اسم المنتج *:</label>
+
+          <input type="text" id="prod-name" class="form-input" placeholder="مثال: حليب جودة 1 لتر" required>
+
+        </div>
+
+        <!-- التصنيف -->
+
+                <!-- قسم صورة المنتوج -->
+
+        <div class="form-group" style="text-align: center; margin-bottom: 14px;">
+
+          <label class="form-label" style="text-align: right; display: block;">صورة المنتوج:</label>
+
+          <div id="prod-img-box" style="position: relative; width: 120px; height: 120px; margin: 6px auto; border-radius: 14px; border: 2px dashed #94a3b8; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
+
+            <img id="prod-img-preview" src="" alt="صورة المنتوج" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+
+            <div id="prod-img-placeholder" style="color: #64748b; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+
+              <span style="font-size: 30px;">📷</span>
+
+              <span>إضافة صورة</span>
+
+            </div>
+
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+
+            <button type="button" id="btn-open-camera-modal" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; background: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer;">
+
+              <span>📸</span>
+
+              <span>التقاط بالكاميرا</span>
+
+            </button>
+
+            <label class="btn-secondary" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; background: #475569; color: white; border-radius: 8px; cursor: pointer;">
+
+              <span>🖼️</span>
+
+              <span>المعرض / ملف</span>
+
+              <input type="file" id="prod-gallery-input" accept="image/*" style="display: none;">
+
+            </label>
+
+            <button type="button" id="btn-edit-prod-img" class="btn-secondary" style="display: none; align-items: center; gap: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; background: #d97706; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              <span>✂️</span>
+              <span>تأطير وقص</span>
+            </button>
+
+            <button type="button" id="btn-remove-prod-img" class="btn-secondary" style="display: none; align-items: center; gap: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">
+
+              <span>🗑️</span>
+
+              <span>حذف</span>
+
+            </button>
+
+            <button type="button" id="btn-save-img-to-drive" class="btn-secondary" style="display: none; align-items: center; gap: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer;" title="تصدير هذه الصورة فوراً إلى مجلد Google Drive">
+
+              <span>☁️</span>
+
+              <span>حفظ في Drive</span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- الفئة / التصنيف -->
+
+        <div class="form-group">
+
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+
+            <span>الفئة / التصنيف *:</span>
+
+            <button type="button" id="btn-quick-add-category" style="background: none; border: none; color: var(--primary-accent); font-weight: 800; font-size: 12px; cursor: pointer;">
+
+              ➕ فئة جديدة
+
+            </button>
+
+          </label>
+
+          <select id="prod-category-select" class="form-input" style="font-weight: 700;">
+
+            <!-- يتم تعبئتها ديناميكياً بكل الفئات -->
+
+          </select>
+
+          <div id="new-category-inline-box" style="display: none; margin-top: 8px; background: #eff6ff; padding: 8px; border-radius: 8px; border: 1px solid #bfdbfe;">
+
+            <div style="display: flex; gap: 6px;">
+
+              <input type="text" id="new-category-input" class="form-input" placeholder="اكتب اسم الفئة الجديدة..." style="flex: 1; background: white; font-size: 12px;">
+
+              <button type="button" id="btn-confirm-add-category" class="btn-primary-action" style="padding: 0 10px; font-size: 11px; white-space: nowrap;">حفظ الفئة</button>
+
+              <button type="button" id="btn-cancel-add-category" class="btn-secondary" style="padding: 0 8px; font-size: 11px;">✕</button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- الأسعار -->
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+          <div class="form-group">
+
+            <label class="form-label">سعر الشراء (رأس المال):</label>
+
+            <input type="number" step="0.01" id="prod-buy-price" class="form-input" placeholder="0.00">
+
+          </div>
+
+          <div class="form-group">
+
+            <label class="form-label">سعر البيع بالدرهم *:</label>
+
+            <input type="number" step="0.01" id="prod-sell-price" class="form-input" placeholder="0.00" required>
+
+            <div id="prod-sell-price-rial" style="font-size: 11px; color: #b45309; margin-top: 4px;">0 ريال</div>
+
+          </div>
+
+        </div>
+
+        <!-- الكمية في المخزن -->
+
+        <div class="form-group">
+
+          <label class="form-label">الكمية المتوفرة في المخزن:</label>
+
+          <input type="number" step="1" id="prod-stock" class="form-input" placeholder="مثال: 50" value="10">
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button id="btn-save-product" class="btn-submit-large">
+
+          <span>💾 حفظ المنتج فورياً</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 5: إضافة وتعديل زبون (Customer Modal) -->
+
+  <div id="modal-customer" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h3 id="modal-customer-title">➕ إضافة زبون جديد</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-customer')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="cust-id" value="0">
+
+        <div class="form-group">
+
+          <label class="form-label">الاسم الكامل للزبون *:</label>
+
+          <input type="text" id="cust-name" class="form-input" placeholder="مثال: أحمد المرابط" required>
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">رقم الهاتف (للواتساب والاتصال):</label>
+
+          <input type="tel" id="cust-phone" class="form-input" placeholder="مثال: 0612345678">
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">سقف الكريدي المسموح به (د.م.):</label>
+
+          <input type="number" step="10" id="cust-credit-limit" class="form-input" placeholder="مثال: 1000" value="1000">
+
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; justify-content: space-between;">
+
+          <label class="form-label" style="margin: 0;">السماح بالبيع بالكريدي لهذا الزبون:</label>
+
+          <input type="checkbox" id="cust-allow-credit" checked style="width: 20px; height: 20px; accent-color: var(--primary-accent);">
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button id="btn-save-customer" class="btn-submit-large">
+
+          <span>💾 حفظ بيانات الزبون</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 6: تسديد ديون الزبون مع لوحة أرقام (Pay Debt Modal) -->
+
+  <div id="modal-pay-debt" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h3>💰 تسديد دفعة من دين الزبون</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-pay-debt')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="pay-cust-id" value="0">
+
+        <div class="credit-summary-card" style="margin-bottom: 12px;">
+
+          <div style="font-weight: 700; font-size: 14px;" id="pay-cust-name">الزبون: --</div>
+
+          <div style="font-size: 13px; color: #b91c1c; margin-top: 4px;">
+
+            الدين المستحق حالياً: <strong id="pay-cust-due">0.00 د.م.</strong> (<span id="pay-cust-due-rial">0 ريال</span>)
+
+          </div>
+
+        </div>
+
+        <label class="form-label" style="font-weight: 700;">مبلغ التسديد الواجب خصمه (د.م.):</label>
+
+        <input type="text" id="pay-debt-amount-input" class="form-input-number" readonly value="0.00">
+
+        <button id="btn-pay-full-debt" class="btn-secondary" style="width: 100%; margin-top: 8px; margin-bottom: 8px; font-weight: 700;">
+
+          <span>تسديد كامل الدين المستحق ✅</span>
+
+        </button>
+
+        <!-- لوحة أرقام تسديد الدين -->
+
+        <div class="pos-keypad" id="debt-keypad">
+
+          <button class="keypad-btn" data-key="1">1</button>
+
+          <button class="keypad-btn" data-key="2">2</button>
+
+          <button class="keypad-btn" data-key="3">3</button>
+
+          <button class="keypad-btn btn-keypad-action" data-key="C">C</button>
+
+          <button class="keypad-btn" data-key="4">4</button>
+
+          <button class="keypad-btn" data-key="5">5</button>
+
+          <button class="keypad-btn" data-key="6">6</button>
+
+          <button class="keypad-btn btn-keypad-action" data-key="back">⌫</button>
+
+          <button class="keypad-btn" data-key="7">7</button>
+
+          <button class="keypad-btn" data-key="8">8</button>
+
+          <button class="keypad-btn" data-key="9">9</button>
+
+          <button class="keypad-btn" data-key=".">.</button>
+
+          <button class="keypad-btn" data-key="0">0</button>
+
+          <button class="keypad-btn" data-key="00">00</button>
+
+          <button class="keypad-btn" data-key="50">+50</button>
+
+          <button class="keypad-btn" data-key="100">+100</button>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button id="btn-confirm-pay-debt" class="btn-submit-large">
+
+          <span>✅ تأكيد تسديد وخصم المبلغ</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 6.1: فاتورة وكشف حساب زبون الكريدي (Customer Statement & Credit Invoice) -->
+
+  <div id="modal-customer-statement" class="modal-overlay">
+
+    <div class="modal-content modal-statement-sheet">
+
+      <div class="modal-header">
+
+        <h3 id="stmt-modal-title">📑 فاتورة وكشف حساب زبون الكريدي</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-customer-statement')">✕</button>
+
+      </div>
+
+      <div class="modal-body" style="padding: 10px 12px; max-height: calc(85vh - 120px); overflow-y: auto;">
+
+        <input type="hidden" id="stmt-cust-id" value="0">
+
+        <!-- 1. شريط اختيار المدة الزمنية والتواريخ -->
+
+        <div class="statement-filters-card">
+
+          <div class="form-label" style="font-size: 11px; margin-bottom: 6px; color: var(--primary);">⏱️ تحديد الفترة الزمنية للكشف:</div>
+
+          <div class="statement-presets">
+
+            <button class="stmt-preset-btn active" data-range="all">الكل (منذ البداية)</button>
+
+            <button class="stmt-preset-btn" data-range="today">اليوم</button>
+
+            <button class="stmt-preset-btn" data-range="week">آخر 7 أيام</button>
+
+            <button class="stmt-preset-btn" data-range="month">هذا الشهر (30 يوم)</button>
+
+            <button class="stmt-preset-btn" data-range="custom">فترة مخصصة 📅</button>
+
+          </div>
+
+          <!-- اختيار تواريخ مخصصة -->
+
+          <div id="stmt-custom-dates-box" class="statement-custom-dates" style="display: none; margin-top: 8px;">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+
+              <div>
+
+                <label class="form-label">من تاريخ:</label>
+
+                <input type="date" id="stmt-date-from" class="form-input" style="padding: 6px 8px; font-size: 12px;">
+
+              </div>
+
+              <div>
+
+                <label class="form-label">إلى تاريخ:</label>
+
+                <input type="date" id="stmt-date-to" class="form-input" style="padding: 6px 8px; font-size: 12px;">
+
+              </div>
+
+            </div>
+
+            <button id="btn-apply-stmt-filter" class="btn-secondary" style="width: 100%; margin-top: 8px; background: var(--primary-accent); color: white; border: none; font-weight: 700; padding: 7px;">
+
+              <span>🔍 تطبيق فلترة التواريخ المحددة</span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- 2. ورقة الفاتورة القابلة للطباعة والتصدير (#statement-printable-sheet) -->
+
+        <div id="statement-printable-sheet" class="statement-paper">
+
+          <!-- ترويسة المتجر والوثيقة -->
+
+          <div class="stmt-paper-header">
+
+            <div class="stmt-brand">
+
+              <div class="stmt-store-title" id="stmt-store-name">متجر LMIMA SHOP</div>
+
+              <div class="stmt-store-sub">منظومة البيع وإدارة المتجر • كشف حساب الكريدي</div>
+
+            </div>
+
+            <div class="stmt-badge-box">
+
+              <div class="stmt-doc-badge">فاتورة كشف حساب</div>
+
+              <div class="stmt-date-badge" id="stmt-generated-at">--/--/----</div>
+
+            </div>
+
+          </div>
+
+          <div class="stmt-divider"></div>
+
+          <!-- بطاقة بيانات الزبون والفترة -->
+
+          <div class="stmt-customer-box">
+
+            <div class="stmt-cust-row">
+
+              <div>الزبون: <strong id="stmt-cust-name" style="font-size: 13px;">--</strong></div>
+
+              <div>الهاتف: <strong id="stmt-cust-phone" dir="ltr">--</strong></div>
+
+            </div>
+
+            <div class="stmt-cust-row" style="margin-top: 4px; font-size: 11px; color: #475569;">
+
+              <div>الفترة المحددة: <strong id="stmt-period-label">كافة المشتريات والمدفوعات</strong></div>
+
+              <div>رقم الكشف: <span id="stmt-invoice-code">#CR-0000</span></div>
+
+            </div>
+
+          </div>
+
+          <!-- حالة التحميل -->
+
+          <div id="stmt-loading-spinner" style="display: none; text-align: center; padding: 20px; color: var(--primary);">
+
+            <div class="pulse-dot" style="display: inline-block; margin-bottom: 6px;"></div>
+
+            <div>جاري جلب وتوليد كشف الحساب وفلترة التواريخ...</div>
+
+          </div>
+
+          <div id="stmt-content-body">
+
+            <!-- جدول 1: لائحة المشتريات -->
+
+            <div class="stmt-section-title">
+
+              <span>🛒 لائحة المشتريات بالكريدي (<span id="stmt-purchases-count">0</span>)</span>
+
+            </div>
+
+            <div class="stmt-table-wrapper">
+
+              <table class="stmt-table">
+
+                <thead>
+
+                  <tr>
+
+                    <th style="width: 25%;">التاريخ</th>
+
+                    <th style="width: 35%;">السلعة</th>
+
+                    <th style="width: 12%; text-align: center;">الكمية</th>
+
+                    <th style="width: 13%; text-align: left;">الثمن</th>
+
+                    <th style="width: 15%; text-align: left;">المجموع</th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody id="stmt-purchases-tbody">
+
+                  <!-- عناصر المشتريات عبر JS -->
+
+                </tbody>
+
+                <tfoot>
+
+                  <tr>
+
+                    <td colspan="4" style="text-align: right; font-weight: 800;">مجموع المشتريات خلال الفترة:</td>
+
+                    <td id="stmt-purchases-total-cell" style="text-align: left; font-weight: 800; color: #1e3a8a;">0.00 د.م.</td>
+
+                  </tr>
+
+                </tfoot>
+
+              </table>
+
+            </div>
+
+            <!-- جدول 2: لائحة المبالغ المدفوعة / التسديدات -->
+
+            <div class="stmt-section-title" style="margin-top: 12px;">
+
+              <span>💵 المبالغ التي دفعها الزبون (<span id="stmt-payments-count">0</span>)</span>
+
+            </div>
+
+            <div class="stmt-table-wrapper">
+
+              <table class="stmt-table">
+
+                <thead>
+
+                  <tr>
+
+                    <th style="width: 28%;">تاريخ الدفع</th>
+
+                    <th style="width: 44%;">طريقة الأداء / البيان</th>
+
+                    <th style="width: 28%; text-align: left;">المبلغ المسدد</th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody id="stmt-payments-tbody">
+
+                  <!-- عناصر الدفعات عبر JS -->
+
+                </tbody>
+
+                <tfoot>
+
+                  <tr>
+
+                    <td colspan="2" style="text-align: right; font-weight: 800;">مجموع المبالغ المسددة:</td>
+
+                    <td id="stmt-payments-total-cell" style="text-align: left; font-weight: 800; color: #059669;">0.00 د.م.</td>
+
+                  </tr>
+
+                </tfoot>
+
+              </table>
+
+            </div>
+
+            <!-- 3. الصندوق الإجمالي والملخص المالي -->
+
+            <div class="stmt-summary-card">
+
+              <div class="stmt-summary-row">
+
+                <span>إجمالي المشتريات خلال الفترة:</span>
+
+                <strong id="stmt-sum-purchases">0.00 د.م.</strong>
+
+              </div>
+
+              <div class="stmt-summary-row" style="color: #059669;">
+
+                <span>إجمالي المبالغ المدفوعة (الخصم):</span>
+
+                <strong id="stmt-sum-paid">- 0.00 د.م.</strong>
+
+              </div>
+
+              <div class="stmt-summary-divider"></div>
+
+              <div class="stmt-summary-row highlight">
+
+                <span>صافي الكريدي المتبقي حالياً:</span>
+
+                <div style="text-align: left;">
+
+                  <div id="stmt-sum-remaining-dh" style="font-size: 17px; font-weight: 900; color: #b91c1c;">0.00 د.م.</div>
+
+                  <div id="stmt-sum-remaining-rial" style="font-size: 11px; color: #c2410c; font-weight: 700;">0 ريال</div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- خاتمة الوثيقة -->
+
+            <div class="stmt-footer-note">
+
+              نشكركم على حسن تعاملكم ووفائكم • متجر LMIMA SHOP
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- 3. أزرار الإجراءات: الطبع، التحميل، والإرسال عبر واتساب -->
+
+      <div class="modal-footer statement-modal-footer">
+
+        <button id="btn-stmt-print" class="btn-action-sheet" style="background: #1e293b; color: white;">
+
+          <span>🖨️ طبع الفاتورة</span>
+
+        </button>
+
+        <button id="btn-stmt-download" class="btn-action-sheet" style="background: #0284c7; color: white;">
+
+          <span>📥 تحميل الفاتورة</span>
+
+        </button>
+
+        <button id="btn-stmt-whatsapp" class="btn-action-sheet" style="background: #16a34a; color: white;">
+
+          <span>💬 إرسال بالواتساب</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal 7: إضافة وتعديل ممون (Supplier Modal) -->
+
+  <div id="modal-supplier" class="modal-overlay">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h3 id="modal-supplier-title">➕ إضافة ممون أو شركة جديدة</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-supplier')">✕</button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="supp-id" value="0">
+
+        <div class="form-group">
+
+          <label class="form-label">الاسم الكامل للممون *:</label>
+
+          <input type="text" id="supp-name" class="form-input" placeholder="مثال: عبد الرحيم المنصوري" required>
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">الشركة أو العلامة التجارية:</label>
+
+          <input type="text" id="supp-company" class="form-input" placeholder="مثال: شركة كوكاكولا أو سنترال دانون">
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">رقم الهاتف:</label>
+
+          <input type="tel" id="supp-phone" class="form-input" placeholder="مثال: 0661234567">
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">العنوان أو المدينة:</label>
+
+          <input type="text" id="supp-address" class="form-input" placeholder="مثال: الحي الصناعي">
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">ديون مستحقة له حالياً (د.م.):</label>
+
+          <input type="number" step="0.01" id="supp-due" class="form-input" placeholder="0.00" value="0.00">
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button id="btn-save-supplier" class="btn-submit-large">
+
+          <span>💾 حفظ بيانات الممون</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================== -->
+
+  <!-- Bottom Navigation Bar (شريط التنقل السفلي)       -->
+
+  <!-- ============================================== -->
+
+  <nav class="bottom-nav">
+
+    <button class="nav-item active" data-tab="pos">
+
+      <span class="nav-icon">🛒</span>
+
+      <span>البيع</span>
+
+    </button>
+
+    <button class="nav-item" data-tab="products">
+
+      <span class="nav-icon">📦</span>
+
+      <span>السلع</span>
+
+    </button>
+
+    <button class="nav-item" data-tab="customers">
+
+      <span class="nav-icon">👥</span>
+
+      <span>الزبناء</span>
+
+    </button>
+
+    <button class="nav-item" data-tab="suppliers">
+
+      <span class="nav-icon">🚚</span>
+
+      <span>الممونين</span>
+
+    </button>
+
+    <button class="nav-item" data-tab="dashboard">
+
+      <span class="nav-icon">📊</span>
+
+      <span>المبيعات</span>
+
+    </button>
+
+  </nav>
+
+  <!-- Toast Notification (إشعار عائم) -->
+
+  <div id="toast" class="toast">تمت العملية بنجاح</div>
+
+  <!-- Scripts -->
+
+  <script src="html5-qrcode.min.js"></script>
+
+  <script src="signalr.min.js"></script>
+
+  <script src="lmima_mobile_sync.js"></script>
+
+  <script src="db.js"></script>
+
+  <script src="sync_v2.js"></script>
+
+  <script src="app.js"></script>
+
+  <!-- Modal: تعديل وتأطير أبعاد صورة المنتوج (Recadrage) -->
+
+  <div id="modal-image-editor" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 440px; max-height: 96vh; display: flex; flex-direction: column;">
+
+      <div class="modal-header">
+
+        <h3>✂️ تأطير وتعديل أبعاد الصورة (Recadrage)</h3>
+
+        <button class="modal-close-btn" onclick="closeModal('modal-image-editor')">✕</button>
+
+      </div>
+
+      <div class="modal-body" style="padding: 8px 10px; display: flex; flex-direction: column; align-items: center; overflow-y: auto;">
+
+        <!-- شريط أبعاد التأطير والنسب (Aspect Ratio Presets) -->
+
+        <div class="crop-ratio-bar" style="display: flex; gap: 4px; width: 100%; margin-bottom: 8px;">
+
+          <button type="button" class="btn-crop-ratio active" data-ratio="1:1" style="flex: 1; padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px; border: 1px solid #0284c7; background: #0284c7; color: #fff; cursor: pointer;">🔲 1:1 مربع متجر</button>
+
+          <button type="button" class="btn-crop-ratio" data-ratio="4:3" style="flex: 1; padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; cursor: pointer;">▭ 4:3 عرضي</button>
+
+          <button type="button" class="btn-crop-ratio" data-ratio="3:4" style="flex: 1; padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; cursor: pointer;">▯ 3:4 طولي</button>
+
+          <button type="button" class="btn-crop-ratio" data-ratio="free" style="flex: 1; padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; cursor: pointer;">✂️ حر (تخصيص)</button>
+
+        </div>
+
+        <!-- مسرح التأطير التفاعلي (Interactive Recadrage Stage) -->
+
+        <div id="crop-stage-wrapper" class="crop-stage-wrapper" style="width: 100%; height: 275px; max-height: 40vh; background: #090d16; border-radius: 12px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none;">
+
+          <div id="crop-stage-content" class="crop-stage-content" style="position: relative; display: inline-block;">
+
+            <canvas id="image-editor-canvas" style="display: block; max-width: 100%; max-height: 100%;"></canvas>
+
+            <!-- إطار التأطير المتحرك ومقابض التعديل -->
+
+            <div id="crop-box" class="crop-box" style="position: absolute; top: 0; left: 0; width: 100px; height: 100px; box-sizing: border-box; border: 2px solid #38bdf8; box-shadow: 0 0 0 9999px rgba(9, 13, 22, 0.72); cursor: move; touch-action: none;">
+
+              <!-- خطوط الثلث المساعدة (Rule of thirds grid) -->
+
+              <div style="position: absolute; top: 33.333%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.35); pointer-events: none;"></div>
+
+              <div style="position: absolute; top: 66.666%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.35); pointer-events: none;"></div>
+
+              <div style="position: absolute; left: 33.333%; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.35); pointer-events: none;"></div>
+
+              <div style="position: absolute; left: 66.666%; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.35); pointer-events: none;"></div>
+
+              <!-- مقابض الزوايا (Corner Handles) -->
+
+              <div class="crop-handle tl" data-handle="tl"></div>
+
+              <div class="crop-handle tr" data-handle="tr"></div>
+
+              <div class="crop-handle br" data-handle="br"></div>
+
+              <div class="crop-handle bl" data-handle="bl"></div>
+
+              <!-- مقابض الأضلاع (Edge Handles) -->
+
+              <div class="crop-handle tc" data-handle="tc"></div>
+
+              <div class="crop-handle bc" data-handle="bc"></div>
+
+              <div class="crop-handle ml" data-handle="ml"></div>
+
+              <div class="crop-handle mr" data-handle="mr"></div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- مؤشر الأبعاد والتعليمات -->
+
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 5px; padding: 0 4px;">
+
+          <span id="crop-dim-badge" style="font-size: 11px; font-weight: 700; color: #0284c7; direction: ltr;">500 × 500 px</span>
+
+          <span style="font-size: 10px; color: #64748b;">✋ اسحب المربع للتحريك، وزواياه لتعديل الأبعاد</span>
+
+        </div>
+
+        <!-- شريط التكبير والتصغير (Zoom Slider) -->
+
+        <div style="display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 5px; background: #f1f5f9; padding: 4px 10px; border-radius: 8px;">
+
+          <span style="font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap;">🔍 تكبير:</span>
+
+          <input type="range" id="crop-zoom-slider" min="1" max="2.5" step="0.05" value="1" style="flex: 1; accent-color: #0284c7; cursor: pointer;">
+
+          <span id="crop-zoom-val" style="font-size: 11px; font-weight: 700; color: #0284c7; min-width: 30px; text-align: left;">1.0x</span>
+
+        </div>
+
+        <!-- أزرار أدوات التعديل والإضاءة -->
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; margin-top: 6px;">
+
+          <button type="button" id="btn-editor-rotate-right" class="btn-secondary" style="padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px;">↻ تدوير 90°</button>
+
+          <button type="button" id="btn-editor-flip" class="btn-secondary" style="padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px;">↔️ قلب</button>
+
+          <button type="button" id="btn-editor-brighten" class="btn-secondary" style="padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px;">☀️ إضاءة +</button>
+
+          <button type="button" id="btn-editor-reset" class="btn-secondary" style="padding: 6px 2px; font-size: 11px; font-weight: 700; border-radius: 6px; color: #ef4444;">↺ ضبط</button>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 8px;">
+
+        <button type="button" id="btn-editor-apply" class="btn-submit-large" style="flex: 1; background: #10b981;">
+
+          <span>✓ تأطير واعتماد الصورة (Recadrer)</span>
+
+        </button>
+
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-image-editor')" style="padding: 10px 14px; font-size: 13px;">
+
+          <span>إلغاء</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal: التقاط صورة المنتوج بالكاميرا مباشرة -->
+
+  <div id="modal-camera-capture" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 440px; max-height: 95vh; display: flex; flex-direction: column;">
+
+      <div class="modal-header">
+
+        <h3>📸 التقاط صورة المنتوج بالكاميرا</h3>
+
+        <button class="modal-close-btn" type="button" onclick="closeProductCameraCaptureModal()">✕</button>
+
+      </div>
+
+      <div class="modal-body" style="padding: 10px; display: flex; flex-direction: column; align-items: center; overflow-y: auto;">
+
+        <div style="width: 100%; height: 320px; max-height: 50vh; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 12px; overflow: hidden; position: relative;">
+
+          <video id="camera-capture-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+
+          <canvas id="camera-capture-canvas" style="display: none;"></canvas>
+
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+
+          وجه الكاميرا نحو المنتوج واضغط على زر "التقاط الصورة"
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display: flex; gap: 8px;">
+
+        <button type="button" id="btn-take-photo-snap" class="btn-submit-large" style="flex: 1; background: #0284c7;">
+
+          <span>📸 التقاط الصورة</span>
+
+        </button>
+
+        <button type="button" class="btn-secondary" onclick="closeProductCameraCaptureModal()" style="padding: 10px 14px; font-size: 13px;">
+
+          <span>إلغاء</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+
+</html>
+

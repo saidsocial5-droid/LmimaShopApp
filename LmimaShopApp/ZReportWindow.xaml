@@ -1,0 +1,45 @@
+<Window x:Class="LmimaShopApp.ZReportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="تقرير إغلاق الصندوق (Z-Report)" Height="600" Width="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        FlowDirection="RightToLeft" Background="#F5F6FA">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="جرد الكاشير نهاية اليوم" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="المبلغ المتوقع في الدرج:" FontSize="14" FontWeight="SemiBold" Foreground="#7F8C8D"/>
+            <TextBlock x:Name="txtExpectedCash" Text="0.00 درهم" FontSize="24" FontWeight="Bold" Foreground="#27AE60" Margin="0,5,0,20"/>
+
+            <TextBlock Text="المبيعات النقدية:" FontSize="14" Foreground="#34495E"/>
+            <TextBlock x:Name="txtCashSales" Text="0.00 درهم" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+            <TextBlock Text="مبيعات الكريدي (الديون):" FontSize="14" Foreground="#34495E"/>
+            <TextBlock x:Name="txtCreditSales" Text="0.00 درهم" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+            <Border BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Margin="0,10,0,20"/>
+
+            <TextBlock Text="المبلغ الفعلي (ما تم عده يدوياً):" FontSize="14" FontWeight="SemiBold" Foreground="#34495E" Margin="0,0,0,5"/>
+            <TextBox x:Name="txtActualCash" FontSize="24" FontWeight="Bold" Foreground="#2980B9" Padding="5" TextAlignment="Center" TextChanged="txtActualCash_TextChanged"/>
+
+            <TextBlock x:Name="txtDiscrepancy" Text="الفارق: 0.00 درهم" FontSize="16" FontWeight="Bold" Foreground="#7F8C8D" Margin="0,20,0,0" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Grid.Column="0" Content="إلغاء" Background="#95A5A6" Foreground="White" FontSize="16" FontWeight="Bold" Padding="10" BorderThickness="0" Cursor="Hand" Click="BtnCancel_Click"/>
+            <Button Grid.Column="2" Content="إغلاق وطباعة التقرير" Background="#E74C3C" Foreground="White" FontSize="16" FontWeight="Bold" Padding="10" BorderThickness="0" Cursor="Hand" Click="BtnCloseRegister_Click"/>
+        </Grid>
+    </Grid>
+</Window>

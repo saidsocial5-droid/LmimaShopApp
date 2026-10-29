@@ -1,0 +1,95 @@
+name: Build and Release LmimaShop
+
+# - كل دفع إلى main: بناء وفحص فقط
+# - وسم إصدار (مثل v3.4.1): بناء البرنامج وتطبيق الهاتف ونشرهما كإصدار GitHub يلتقطه التحديث التلقائي
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+
+    - name: Setup Java (apktool / uber-apk-signer)
+      uses: actions/setup-java@v4
+      with:
+        distribution: microsoft
+        java-version: '17'
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Determine version
+      id: ver
+      shell: pwsh
+      run: |
+        if ("${{ github.ref_type }}" -eq "tag") { $v = "${{ github.ref_name }}".TrimStart('v') }
+        else { $v = "0.0.0-ci.${{ github.run_number }}" }
+        "version=$v" >> $env:GITHUB_OUTPUT
+        Write-Host "Version: $v"
+
+    - name: Publish desktop app
+      shell: pwsh
+      env:
+        UPDATE_READ_TOKEN: ${{ secrets.UPDATE_READ_TOKEN }}
+      run: |
+        dotnet publish LmimaShopApp/LmimaShopApp.csproj -c Release -r win-x64 --self-contained false `
+          -p:Version=${{ steps.ver.outputs.version }} `
+          -p:UpdateRepo=${{ github.repository }} `
+          "-p:UpdateToken=$env:UPDATE_READ_TOKEN" `
+          -o out/app
+        # بيانات المتجر لا تُشحن أبداً مع التحديث
+        Remove-Item out/app/settings.json, out/app/LmimaShop.apk -ErrorAction SilentlyContinue
+        Remove-Item out/app/ProductImages, out/app/Logs, out/app/MobileSync -Recurse -ErrorAction SilentlyContinue
+        Compress-Archive -Path out/app/* -DestinationPath out/LmimaShopApp-win-x64.zip
+
+    - name: Build mobile APK
+      shell: pwsh
+      run: python build_apk.py --version ${{ steps.ver.outputs.version }} --out out
+
+    - name: Checksums
+      shell: pwsh
+      run: |
+        Push-Location out
+        $lines = foreach ($f in 'LmimaShopApp-win-x64.zip', 'LmimaShop.apk') {
+          "{0}  {1}" -f (Get-FileHash $f -Algorithm SHA256).Hash.ToLower(), $f
+        }
+        $lines | Set-Content SHA256SUMS.txt -Encoding ascii
+        Get-Content SHA256SUMS.txt
+        Pop-Location
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LmimaShop-${{ steps.ver.outputs.version }}
+        path: |
+          out/LmimaShopApp-win-x64.zip
+          out/LmimaShop.apk
+          out/SHA256SUMS.txt
+
+    - name: Create GitHub Release
+      if: github.ref_type == 'tag'
+      uses: softprops/action-gh-release@v2
+      with:
+        name: LmimaShop ${{ steps.ver.outputs.version }}
+        generate_release_notes: true
+        files: |
+          out/LmimaShopApp-win-x64.zip
+          out/LmimaShop.apk
+          out/SHA256SUMS.txt

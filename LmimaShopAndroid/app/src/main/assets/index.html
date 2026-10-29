@@ -1,0 +1,311 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LMIMA SHOP">
+  <title>LMIMA SHOP - تطبيق المتجر</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <img src="logo.png" alt="Logo" class="header-logo" onerror="this.src='icon-192.png'">
+      <div class="header-title">
+        <h1 id="store-name-display">متجر LMIMA SHOP</h1>
+        <div class="header-subtitle">
+          <span>📲 تطبيق الجيب السحابي</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="btn-open-file" class="header-btn" title="فتح ملف من Google Drive">📂</button>
+      <button id="btn-refresh-sync" class="header-btn" title="تحديث البيانات">🔄</button>
+      <input type="file" id="sync-file-input" accept=".json,.js" style="display: none;">
+    </div>
+  </header>
+
+  <!-- Sync Status Bar -->
+  <div class="sync-banner">
+    <div class="sync-status">
+      <span class="pulse-dot" id="sync-pulse"></span>
+      <span id="sync-status-text">جاري الاتصال بقاعدة البيانات...</span>
+    </div>
+    <div id="records-count-text" style="color: var(--text-muted); font-size: 11px;">0 منتج • 0 زبون</div>
+  </div>
+
+  <!-- Main App Container -->
+  <main class="container">
+
+    <!-- 1. شاشة المبيعات (Dashboard) -->
+    <section id="tab-dashboard" class="tab-screen active">
+      <!-- Hero Card: إجمالي مبيعات اليوم -->
+      <div class="hero-card">
+        <div class="hero-header">
+          <span>📅 ملخص مبيعات اليوم (<span id="today-date-display">--</span>)</span>
+          <span id="last-sync-hour">--:--</span>
+        </div>
+        <div class="hero-main-amt" id="today-sales-dh">0.00 د.م.</div>
+        <div class="hero-rial-tag">
+          <span>🪙</span>
+          <span id="today-sales-rial">0 ريال</span>
+        </div>
+        <div class="hero-substats">
+          <div>
+            <div>صافي الربح التقديري:</div>
+            <strong id="today-profit-dh" style="color: #4ade80;">+0.00 د.م. (<span id="today-profit-rial">0 ريال</span>)</strong>
+          </div>
+          <div style="text-align: left;">
+            <div>الفواتير:</div>
+            <strong id="today-invoices-count">0 فاتورة</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- شبكة المؤشرات السريعة -->
+      <div class="metrics-grid">
+        <div class="metric-card success">
+          <div class="metric-title">💵 مقبوضات نقدية (كاش)</div>
+          <div class="metric-value" id="today-cash-dh">0.00 د.م.</div>
+          <div class="metric-subvalue" id="today-cash-rial">0 ريال</div>
+        </div>
+        <div class="metric-card warning">
+          <div class="metric-title">📝 ديون مسجلة اليوم (كريدي)</div>
+          <div class="metric-value" id="today-credit-dh">0.00 د.م.</div>
+          <div class="metric-subvalue" id="today-credit-rial">0 ريال</div>
+        </div>
+      </div>
+
+      <!-- قائمة آخر الفواتير -->
+      <div class="section-title">
+        <span>🧾 آخر الفواتير المنفذة</span>
+        <span id="invoices-counter-badge" style="font-size: 12px; color: var(--text-muted);">0 فاتورة</span>
+      </div>
+
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="invoice-search-input" class="search-input" placeholder="ابحث برقم الفاتورة أو اسم الزبون...">
+      </div>
+
+      <div id="invoices-list" class="items-list">
+        <!-- يتم إدراج الفواتير عبر JS -->
+      </div>
+    </section>
+
+    <!-- 2. شاشة ديون الزبائن (Debts) -->
+    <section id="tab-debts" class="tab-screen">
+      <!-- Hero Card: إجمالي الديون المعلقة -->
+      <div class="hero-card" style="background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #ea580c 100%);">
+        <div class="hero-header">
+          <span>👥 إجمالي ديون المحل المعلقة (الكريدي)</span>
+          <span id="debtors-count-badge">0 زبون</span>
+        </div>
+        <div class="hero-main-amt" id="total-debts-dh">0.00 د.م.</div>
+        <div class="hero-rial-tag">
+          <span>🪙</span>
+          <span id="total-debts-rial">0 ريال</span>
+        </div>
+        <div class="hero-substats">
+          <div>مبالغ واجبة التحصيل من الزبائن</div>
+          <div style="font-weight: 700;">تذكير بنقرة واحدة عبر واتساب 💬</div>
+        </div>
+      </div>
+
+      <!-- شريط البحث والتصفية -->
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="debt-search-input" class="search-input" placeholder="ابحث باسم الزبون أو رقم الهاتف...">
+      </div>
+
+      <div class="chips-container">
+        <button class="chip active" data-filter="all">الكل (<span id="count-all-debts">0</span>)</button>
+        <button class="chip" data-filter="over100">> 100 د.م.</button>
+        <button class="chip" data-filter="over300">> 300 د.م.</button>
+        <button class="chip" data-filter="over500">> 500 د.م.</button>
+      </div>
+
+      <!-- قائمة بطاقات الزبائن -->
+      <div id="debtors-list" class="items-list">
+        <!-- يتم إدراج بطاقات الزبائن عبر JS -->
+      </div>
+    </section>
+
+    <!-- 3. شاشة فحص الأسعار والباركود (Scanner) -->
+    <section id="tab-scanner" class="tab-screen">
+      <div class="section-title">
+        <span>📷 قارئ الباركود وفحص الأسعار</span>
+        <span style="font-size: 11px; color: var(--text-muted);">كاميرا الهاتف / بحث سريع</span>
+      </div>
+
+      <!-- نافذة الكاميرا -->
+      <div class="scanner-box">
+        <div id="scanner-viewport"></div>
+        <div id="scanner-placeholder" class="scanner-placeholder">
+          <div class="scanner-icon">📷</div>
+          <p style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">قارئ الباركود بالكاميرا</p>
+          <p style="font-size: 11px; color: #94a3b8;">اضغط الزر أسفله لتشغيل الكاميرا ومسح باركود أي منتج</p>
+        </div>
+      </div>
+
+      <div class="scanner-controls">
+        <button id="btn-start-camera" class="scanner-btn btn-start-scanner">
+          <span>📷 تشغيل الكاميرا</span>
+        </button>
+        <button id="btn-stop-camera" class="scanner-btn btn-stop-scanner">
+          <span>⏹️ إيقاف الكاميرا</span>
+        </button>
+      </div>
+
+      <!-- بحث يدوي بالاسم أو رقم الباركود -->
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="product-search-input" class="search-input" placeholder="اكتب اسم المنتج أو رقم الباركود يدpipeاً...">
+      </div>
+
+      <!-- بطاقة نتيجة المنتج المفحوص -->
+      <div id="scanned-product-result" style="display: none;">
+        <div class="product-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="product-name" id="res-prod-name">اسم المنتج</div>
+              <div class="product-barcode">باركود: <span id="res-prod-barcode">--</span></div>
+            </div>
+            <span class="stock-badge stock-in" id="res-prod-stock-badge">20 قطعة</span>
+          </div>
+
+          <div class="product-price-section">
+            <div>
+              <div class="price-item-label">سعر البيع بالدرهم:</div>
+              <div class="price-item-value" id="res-prod-price-dh">0.00 د.م.</div>
+            </div>
+            <div style="text-align: left;">
+              <div class="price-item-label">بالريال المغربي:</div>
+              <div class="price-item-value" id="res-prod-price-rial" style="color: #b45309; font-size: 18px;">0 ريال</div>
+            </div>
+          </div>
+
+          <!-- تفاصيل رأس المال وهامش الربح للتاجر -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; color: var(--text-muted);" id="res-prod-category">الفئة: عام</span>
+            <button id="btn-toggle-profit" class="profit-toggle-btn">🔒 إظهار سعر الشراء والربح</button>
+          </div>
+
+          <div id="res-profit-drawer" class="profit-drawer">
+            <div>سعر الشراء (رأس المال): <strong id="res-prod-buy-dh">0.00 د.م.</strong></div>
+            <div>الربح الصافي: <strong id="res-prod-profit-dh" style="color: var(--success);">+0.00 د.م.</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- قائمة تصفح المنتجات -->
+      <div class="section-title" style="margin-top: 20px;">
+        <span>📦 قائمة المنتجات (<span id="products-catalog-count">0</span>)</span>
+      </div>
+      <div id="products-catalog-list" class="items-list">
+        <!-- يتم إدراج المنتجات عبر JS -->
+      </div>
+    </section>
+
+    <!-- 4. شاشة المزامنة والإعدادات (Settings) -->
+    <section id="tab-settings" class="tab-screen">
+      <div class="settings-section">
+        <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--primary);">☁️ المزامنة السحابية (Google Drive)</h3>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 14px;">
+          يقوم برنامج الكاشير على حاسوبك بتصدير ملف المزامنة <code>lmima_mobile_sync.json</code> تلقائياً إلى مجلد Google Drive بعد كل عملية بيع وإغلاق.
+        </p>
+
+        <button id="btn-settings-pick-file" class="btn-secondary" style="background: var(--primary-accent); color: white; border: none;">
+          <span>📂 اختيار ملف المزامنة من Google Drive</span>
+        </button>
+
+        <button id="btn-settings-reload-data" class="btn-secondary">
+          <span>🔄 إعادة تحميل آخر بيانات مزامنة</span>
+        </button>
+
+        <div class="settings-row" style="margin-top: 14px;">
+          <div>
+            <div class="settings-label">آخر وقت مزامنة سحابية</div>
+            <div class="settings-desc" id="settings-sync-time">--</div>
+          </div>
+          <span class="badge badge-cash" id="settings-sync-badge">مُحدث</span>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">إجمالي المنتجات المخزنة محلياً</div>
+            <div class="settings-desc">للبحث السريع بدون إنترنت</div>
+          </div>
+          <strong id="settings-products-count">0</strong>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">إجمالي زبائن الكريدي</div>
+            <div class="settings-desc">للتحصيل وإرسال الواتساب</div>
+          </div>
+          <strong id="settings-debtors-count">0</strong>
+        </div>
+      </div>
+
+      <!-- طريقة تثبيت التطبيق على الشاشة الرئيسية للهاتف -->
+      <div class="settings-section">
+        <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-main);">📱 تثبيت التطبيق على شاشة الهاتف (PWA)</h3>
+        
+        <div style="font-size: 12px; line-height: 1.8; color: var(--text-muted);">
+          <p style="margin-bottom: 8px;"><strong>🤖 هواتف أندرويد (Google Chrome):</strong><br>
+          اضغط على زر الخيارات (⋮) أعلى المتصفح، ثم اختر <strong>"إضافة إلى الشاشة الرئيسية" (Ajouter à l'écran d'accueil)</strong>.</p>
+          
+          <p><strong>🍏 هواتف آيفون (Safari):</strong><br>
+          اضغط على زر المشاركة (Share ⎋) أسفل الشاشة، ثم اختر <strong>"إضافة إلى الشاشة الرئيسية" (Sur l'écran d'accueil)</strong>.</p>
+        </div>
+      </div>
+
+      <div class="settings-section" style="text-align: center; font-size: 11px; color: var(--text-muted);">
+        <strong>LMIMA SHOP Mobile Companion v2.0</strong><br>
+        تم التطوير لمتجر LMIMA SHOP • دعم الدرهم والريال المغربي
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="dashboard">
+      <span class="nav-icon">📊</span>
+      <span>المبيعات</span>
+    </button>
+    <button class="nav-item" data-tab="debts">
+      <span class="nav-icon">👥</span>
+      <span>الكريدي</span>
+    </button>
+    <button class="nav-item" data-tab="scanner">
+      <span class="nav-icon">🔍</span>
+      <span>الأسعار</span>
+    </button>
+    <button class="nav-item" data-tab="settings">
+      <span class="nav-icon">⚙️</span>
+      <span>المزامنة</span>
+    </button>
+  </nav>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">تمت العملية بنجاح</div>
+
+  <!-- Scripts -->
+  <script src="html5-qrcode.min.js"></script>
+  <!-- Load embedded sync data directly if present -->
+  <script src="lmima_mobile_sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

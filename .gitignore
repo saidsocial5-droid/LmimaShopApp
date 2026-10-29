@@ -1,0 +1,56 @@
+# ============================================================
+# LmimaShop - لا تُرفع إلى GitHub أبداً: مخرجات البناء، بيانات المتجر،
+# بيانات الزبائن، النسخ الاحتياطية، أو ملفات APK
+# ============================================================
+
+# ---------- .NET / Visual Studio ----------
+bin/
+obj/
+out/
+dist/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# ---------- بيانات المتجر والزبائن ----------
+settings.json
+lmima_mobile_sync.json
+lmima_mobile_sync.js
+lmima_pending_ops*.json
+ProductImages/
+MobileSync/
+Logs/
+*.log
+
+# ---------- النسخ الاحتياطية وقواعد البيانات ----------
+Backups/
+*.bak
+*.sql.gz
+LmimaShopDB*.sql
+LmimaShop_AutoBackup_*.sql
+LmimaShop_BeforeUpdate_*.sql
+
+# ---------- حزم الهاتف والتوزيع ----------
+*.apk
+*.aab
+*.idsig
+*.zip
+*.lnk
+Lmima Shop APK/
+
+# ---------- أدوات بناء APK: الكود المصدري للقالب يُرفع، والباقي يُعاد توليده ----------
+ApkBuilderTools/jre/
+ApkBuilderTools/final/
+ApkBuilderTools/framework/
+ApkBuilderTools/template/assets/
+ApkBuilderTools/template/build/
+
+# ---------- مجلدات مؤقتة وملفات تجارب ----------
+Temp*/
+LmimaShopApk_temp/
+TranscriptReader/
+matches*.txt
+checkout_logic.txt
+لم يتم تحديد مجلد بعد/

@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\app_icon.ico</ApplicationIcon>
+    <!-- يُستبدل تلقائياً بوسم الإصدار (v3.4.0) عند البناء في GitHub Actions -->
+    <Version>3.4.0</Version>
+    <!-- مستودع التحديثات (owner/repo) ومفتاح القراءة؛ المفتاح يُمرر فقط من أسرار GitHub عند البناء -->
+    <UpdateRepo Condition="'$(UpdateRepo)' == ''"></UpdateRepo>
+    <UpdateToken Condition="'$(UpdateToken)' == ''"></UpdateToken>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="UpdateRepo" Value="$(UpdateRepo)" />
+    <AssemblyMetadata Include="UpdateToken" Value="$(UpdateToken)" Condition="'$(UpdateToken)' != ''" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- تطبيق الهاتف يُقدَّم من الخادم المحلي (http://IP:8080) لذلك يُنسخ بجانب البرنامج، بدون ملفات البيانات أو الحزم -->
+    <Content Include="..\LmimaShopMobile\**\*" Exclude="..\LmimaShopMobile\**\*.apk;..\LmimaShopMobile\**\*.md;..\LmimaShopMobile\**\*.bat;..\LmimaShopMobile\**\*.ps1;..\LmimaShopMobile\lmima_mobile_sync.*">
+      <Link>LmimaShopMobile\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="ExcelDataReader" Version="3.9.0" />
+    <PackageReference Include="ExcelDataReader.DataSet" Version="3.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageReference Include="MySqlConnector" Version="2.6.1" />
+    <PackageReference Include="Polly" Version="8.8.0" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="System.Management" Version="10.0.12" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app_icon.ico" />
+    <Resource Include="Assets\app_icon.png" />
+    <Resource Include="Assets\Fonts\*.ttf" />
+    <Resource Include="Assets\store_bg.jpg" />
+    <Resource Include="Assets\Cash\*.*" />
+    <None Update="Assets\Cash\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

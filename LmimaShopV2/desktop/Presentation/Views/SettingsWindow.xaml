@@ -1,0 +1,168 @@
+<Window x:Class="LmimaShopV2.Desktop.Presentation.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="الإعدادات"
+        Width="880"
+        Height="720"
+        WindowStartupLocation="CenterOwner"
+        FlowDirection="RightToLeft">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="الإعدادات" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="بيانات المتجر، الطابعة، الضريبة والنسخ الاحتياطي."
+                       Style="{StaticResource MutedText}"
+                       Margin="0,2,0,0" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" Margin="0,14,0,0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="بيانات المتجر" Style="{StaticResource SectionTitle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                <TextBlock Text="اسم المتجر" Style="{StaticResource FieldLabel}" />
+                                <TextBox Text="{Binding ShopName, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="ICE" Style="{StaticResource FieldLabel}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding ShopIce, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="RC" Style="{StaticResource FieldLabel}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding ShopRc, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="IF" Style="{StaticResource FieldLabel}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding ShopIf, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                <TextBlock Text="رقم الباتنت" Style="{StaticResource FieldLabel}" />
+                                <TextBox Text="{Binding ShopPatente, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="العنوان" Style="{StaticResource FieldLabel}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding ShopAddress, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="الهاتف" Style="{StaticResource FieldLabel}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding ShopPhone, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="تذييل الفاتورة" Style="{StaticResource FieldLabel}" Margin="0,10,0,4" />
+                                <TextBox Text="{Binding ReceiptFooter, UpdateSourceTrigger=PropertyChanged}"
+                                         AcceptsReturn="True"
+                                         MinHeight="60"
+                                         TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="الضريبة والولاء" Style="{StaticResource SectionTitle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                <TextBlock Text="نسبة TVA %" Style="{StaticResource FieldLabel}" />
+                                <TextBox Text="{Binding TvaRate, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="قيمة نقطة الولاء (DH)" Style="{StaticResource FieldLabel}" />
+                                <TextBox Text="{Binding LoyaltyMadPerPoint, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="6,0,0,0">
+                                <TextBlock Text="خيارات" Style="{StaticResource FieldLabel}" />
+                                <CheckBox Content="الأسعار تشمل الضريبة"
+                                          IsChecked="{Binding PricesIncludeTva}" />
+                                <CheckBox Content="إظهار وحدة الريال" IsChecked="{Binding ShowRial}" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="الطابعة" Style="{StaticResource SectionTitle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                <TextBlock Text="طابعة الإيصالات" Style="{StaticResource FieldLabel}" />
+                                <ComboBox ItemsSource="{Binding Printers}"
+                                          IsEditable="True"
+                                          Text="{Binding PrinterName, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="ترميز الصفحة" Style="{StaticResource FieldLabel}" />
+                                <TextBox Text="{Binding ReceiptCodePage, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
+                                <CheckBox Content="طباعة تلقائية" IsChecked="{Binding AutoPrintReceipt}" />
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="طباعة تجريبية"
+                                Style="{StaticResource AppButton}"
+                                Margin="0,10,0,0"
+                                HorizontalAlignment="Left"
+                                Command="{Binding PrintTestCommand}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="المظهر والنسخ الاحتياطي" Style="{StaticResource SectionTitle}" />
+                        <CheckBox Content="المظهر الداكن" IsChecked="{Binding IsDark}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Button Content="نسخة احتياطية الآن"
+                                    Style="{StaticResource AccentButton}"
+                                    Command="{Binding BackupCommand}" />
+                            <Button Content="فتح مجلد النسخ"
+                                    Style="{StaticResource SubtleButton}"
+                                    Margin="8,0,0,0"
+                                    Command="{Binding OpenBackupFolderCommand}" />
+                            <Button Content="تبديل المظهر"
+                                    Style="{StaticResource SubtleButton}"
+                                    Margin="8,0,0,0"
+                                    Command="{Binding ToggleThemeCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource MutedTextBrush}"
+                       Visibility="{Binding IsError, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}" />
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       Style="{StaticResource ErrorText}"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding IsError, Converter={StaticResource BoolToVisibility}}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Content="حفظ الإعدادات"
+                        Style="{StaticResource AccentButton}"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+                <Button Content="إغلاق"
+                        Style="{StaticResource SubtleButton}"
+                        Margin="8,0,0,0"
+                        Click="OnCloseClick" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

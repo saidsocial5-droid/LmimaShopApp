@@ -1,0 +1,267 @@
+<Window x:Class="LmimaShopV2.Desktop.Presentation.Views.ReportsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="التقارير"
+        Width="1080"
+        Height="720"
+        WindowStartupLocation="CenterOwner"
+        FlowDirection="RightToLeft">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="التقارير" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="تقرير اليوم وتقارير الورديات (Z)."
+                       Style="{StaticResource MutedText}"
+                       Margin="0,2,0,0" />
+        </StackPanel>
+
+        <TabControl Grid.Row="2" Margin="0,14,0,0">
+            <TabItem Header="تقرير اليوم">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="التاريخ"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource FieldLabel}" />
+                        <DatePicker Grid.Column="1" SelectedDate="{Binding Date}" />
+                        <Button Grid.Column="2"
+                                Content="تحميل"
+                                Style="{StaticResource AppButton}"
+                                Margin="8,0,0,0"
+                                Command="{Binding LoadDailyCommand}" />
+                    </Grid>
+
+                    <Border Grid.Row="1"
+                            Style="{StaticResource CardBorder}"
+                            Margin="0,14,0,0"
+                            Visibility="{Binding DailyReport, Converter={StaticResource NullToVisibility}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="عدد العمليات" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.SalesCount}" Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="الإيراد" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.Revenue, Converter={StaticResource Money}}"
+                                           Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="TVA" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.Tva, Converter={StaticResource Money}}"
+                                           Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="نقدًا" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.Cash, Converter={StaticResource Money}}"
+                                           Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="بطاقة" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.Card, Converter={StaticResource Money}}"
+                                           Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="5">
+                                <TextBlock Text="آجل" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.Credit, Converter={StaticResource Money}}"
+                                           Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="6">
+                                <TextBlock Text="إرجاعات" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding DailyReport.Returns, Converter={StaticResource Money}}"
+                                           Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="2" Margin="0,14,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,5,0">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="أفضل المنتجات" Style="{StaticResource SectionTitle}" />
+                                <DataGrid Style="{StaticResource AppDataGrid}"
+                                          ItemsSource="{Binding DailyReport.TopProducts}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="المنتج" Binding="{Binding Name}" Width="*" />
+                                        <DataGridTextColumn Header="الكمية" Binding="{Binding Qty}" Width="90" />
+                                        <DataGridTextColumn Header="الإيراد"
+                                                            Binding="{Binding Revenue, Converter={StaticResource Money}}"
+                                                            Width="120" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="5,0,0,0">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="ملخص" Style="{StaticResource SectionTitle}" />
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource MutedText}">
+                                        <Run Text="تحصيل الديون: " />
+                                        <Run Text="{Binding DailyReport.DebtPayments, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="الإرجاعات: " />
+                                        <Run Text="{Binding DailyReport.Returns, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="تقرير الورديات (Z)">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid Grid.Column="0"
+                              Style="{StaticResource AppDataGrid}"
+                              Margin="0,0,10,0"
+                              ItemsSource="{Binding Shifts}"
+                              SelectedItem="{Binding SelectedShift}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الكاشير" Binding="{Binding CashierName}" Width="*" />
+                            <DataGridTextColumn Header="الفتح"
+                                                Binding="{Binding OpenedAt, Converter={StaticResource DateTime}, ConverterParameter=dd/MM HH:mm}"
+                                                Width="130" />
+                            <DataGridTextColumn Header="الحالة" Binding="{Binding IsOpen}" Width="70" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Column="1" Style="{StaticResource CardBorder}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="تقرير Z" Style="{StaticResource SectionTitle}" />
+
+                            <Button DockPanel.Dock="Bottom"
+                                    Content="طباعة تقرير Z"
+                                    Style="{StaticResource AccentButton}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,12,0,0"
+                                    Command="{Binding PrintZReportCommand}" />
+
+                            <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="عدد العمليات" Style="{StaticResource StatLabel}" />
+                                    <TextBlock Text="{Binding ZReport.SalesCount}" Style="{StaticResource StatValue}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="الإيراد" Style="{StaticResource StatLabel}" />
+                                    <TextBlock Text="{Binding ZReport.TotalRevenue, Converter={StaticResource Money}}"
+                                               Style="{StaticResource StatValue}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="TVA" Style="{StaticResource StatLabel}" />
+                                    <TextBlock Text="{Binding ZReport.TvaCollected, Converter={StaticResource Money}}"
+                                               Style="{StaticResource StatValue}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <ScrollViewer>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource MutedText}">
+                                        <Run Text="نقدًا: " />
+                                        <Run Text="{Binding ZReport.CashSales, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="بطاقة: " />
+                                        <Run Text="{Binding ZReport.CardSales, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="آجل: " />
+                                        <Run Text="{Binding ZReport.CreditSales, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="تحصيل ديون: " />
+                                        <Run Text="{Binding ZReport.DebtPaymentsCash, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="إرجاعات: " />
+                                        <Run Text="{Binding ZReport.ReturnsRefund, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="المتوقع نقدًا: " />
+                                        <Run Text="{Binding ZReport.ExpectedCash, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="المعدود: " />
+                                        <Run Text="{Binding ZReport.CountedCash, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="الفرق: " />
+                                        <Run Text="{Binding ZReport.Difference, Mode=OneWay, Converter={StaticResource Money}}" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource MutedText}" Margin="0,6,0,0">
+                                        <Run Text="نقاط الولاء: " />
+                                        <Run Text="{Binding ZReport.LoyaltyGranted, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <Grid Grid.Row="1" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource MutedTextBrush}"
+                       Visibility="{Binding IsError, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}" />
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       Style="{StaticResource ErrorText}"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding IsError, Converter={StaticResource BoolToVisibility}}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Content="تحديث الكل"
+                        Style="{StaticResource SubtleButton}"
+                        Click="OnReloadAllClick" />
+                <Button Content="إغلاق"
+                        Style="{StaticResource SubtleButton}"
+                        Margin="8,0,0,0"
+                        Click="OnCloseClick" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

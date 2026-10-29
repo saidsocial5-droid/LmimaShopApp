@@ -1,0 +1,65 @@
+# ============================================================
+# LmimaShop V2 - repository ignore rules
+# Never commit build output, local configuration, logs, phone
+# packages, backups or any customer data.
+# ============================================================
+
+# ---------- .NET / Visual Studio ----------
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+.idea/
+*.swp
+
+# ---------- Build & publish output ----------
+dist/
+publish/
+*.apk
+*.aab
+*.apks
+*.idsig
+*.aligned.apk
+
+# ---------- Runtime data (never in the repository) ----------
+AppData/
+**/AppData/
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+Backups/
+**/Backups/
+*.log
+logs/
+
+# ---------- Secure / machine-specific configuration ----------
+config.json
+config.*.json
+appsettings.*.local.json
+secrets.json
+*.secret
+*.dpapi
+*.pfx
+*.p12
+*.jks
+*.keystore
+.env
+.env.*
+!config.example.json
+
+# ---------- Local APK template (generated once, never committed) ----------
+templates/LmimaShopV2Template/
+templates/LmimaShopV2Template.apk
+
+# ---------- Dependencies (should not exist in this repo) ----------
+node_modules/
+
+# ---------- OS / editor noise ----------
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,183 @@
+<Window x:Class="LmimaShopV2.Desktop.Presentation.Views.ReturnsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="الإرجاع"
+        Width="1240"
+        Height="760"
+        WindowStartupLocation="CenterOwner"
+        FlowDirection="RightToLeft">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="إرجاع المبيعات" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="اختر عملية بيع، حدد الكميات المراد إرجاعها ثم أكّد."
+                       Style="{StaticResource MutedText}"
+                       Margin="0,2,0,0" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="380" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Sale lookup -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,10,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="عمليات البيع" Style="{StaticResource SectionTitle}" />
+
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 KeyDown="OnSearchKeyDown"
+                                 ToolTip="رقم الفاتورة أو اسم العميل" />
+                        <Button Grid.Column="1"
+                                Content="بحث"
+                                Style="{StaticResource AppButton}"
+                                Margin="6,0,0,0"
+                                Command="{Binding SearchCommand}" />
+                    </Grid>
+
+                    <DataGrid Grid.Row="2"
+                              Style="{StaticResource AppDataGrid}"
+                              ItemsSource="{Binding Sales}"
+                              SelectedItem="{Binding SelectedSale}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الفاتورة" Binding="{Binding InvoiceNo}" Width="110" />
+                            <DataGridTextColumn Header="العميل" Binding="{Binding CustomerName}" Width="*" />
+                            <DataGridTextColumn Header="المجموع"
+                                                Binding="{Binding Total, Converter={StaticResource Money}}"
+                                                Width="110" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- Return lines -->
+            <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="0,0,10,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="عناصر الفاتورة" Style="{StaticResource SectionTitle}" />
+
+                    <DataGrid Grid.Row="1"
+                              Style="{StaticResource AppDataGrid}"
+                              ItemsSource="{Binding Lines}"
+                              IsReadOnly="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="المنتج" Binding="{Binding ProductName}" Width="*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="الكمية"
+                                                Binding="{Binding PurchasedQty}"
+                                                Width="80"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="أُرجع"
+                                                Binding="{Binding ReturnedQty}"
+                                                Width="70"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="المتاح"
+                                                Binding="{Binding ReturnableQty}"
+                                                Width="70"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="السعر"
+                                                Binding="{Binding UnitPrice, Converter={StaticResource Money}}"
+                                                Width="100"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="إرجاع كم"
+                                                Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                                Width="90" />
+                            <DataGridTextColumn Header="القيمة"
+                                                Binding="{Binding LineRefund, Converter={StaticResource Money}}"
+                                                Width="110"
+                                                IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                        <TextBlock Text="سبب الإرجاع" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="عدد العناصر المحددة" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding SelectedCount}" Style="{StaticResource StatValue}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="قيمة الإرجاع" Style="{StaticResource StatLabel}" />
+                                <TextBlock Text="{Binding RefundPreviewText}"
+                                           FontSize="22"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentBrush}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <Button Content="تأكيد الإرجاع"
+                                    Style="{StaticResource DangerButton}"
+                                    Command="{Binding SubmitReturnCommand}" />
+                            <Button Content="تحديث"
+                                    Style="{StaticResource SubtleButton}"
+                                    Margin="8,0,0,0"
+                                    Command="{Binding ReloadCommand}" />
+                            <Button Content="إغلاق"
+                                    Style="{StaticResource SubtleButton}"
+                                    Margin="8,0,0,0"
+                                    Click="OnCloseClick" />
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Margin="0,10,0,0"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource MutedTextBrush}"
+                                   Visibility="{Binding IsError, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}" />
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Style="{StaticResource ErrorText}"
+                                   Margin="0,10,0,0"
+                                   Visibility="{Binding IsError, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Recent returns -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="أحدث الإرجاعات" Style="{StaticResource SectionTitle}" />
+                    <DataGrid Style="{StaticResource AppDataGrid}" ItemsSource="{Binding RecentReturns}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الفاتورة" Binding="{Binding InvoiceNo}" Width="100" />
+                            <DataGridTextColumn Header="العميل" Binding="{Binding CustomerName}" Width="*" />
+                            <DataGridTextColumn Header="القيمة"
+                                                Binding="{Binding RefundTotal, Converter={StaticResource Money}}"
+                                                Width="110" />
+                            <DataGridTextColumn Header="التاريخ"
+                                                Binding="{Binding CreatedAt, Converter={StaticResource DateTime}, ConverterParameter=dd/MM HH:mm}"
+                                                Width="120" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

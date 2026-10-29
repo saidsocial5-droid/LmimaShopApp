@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="LmimaShop V2 — تطبيق نقطة البيع للجوال">
+  <title>LmimaShop V2</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <div class="app-shell" id="app-shell">
+
+    <section id="screen-pairing" class="pairing" aria-labelledby="pair-title">
+      <div class="pairing-card">
+        <img class="brand-icon" src="./icon-192.png" alt="شعار LmimaShop" width="88" height="88">
+        <h1 id="pair-title">LmimaShop V2</h1>
+        <p class="muted">نقطة بيع المتجر — نسخة الجوال</p>
+
+        <form id="pair-form" class="pairing-form" novalidate>
+          <label class="field">
+            <span>عنوان الخادم</span>
+            <input id="pair-server" class="input" type="text" dir="ltr" inputmode="url"
+                   autocomplete="url" placeholder="http://192.168.1.10:8090">
+          </label>
+          <label class="field">
+            <span>رمز الاقتران</span>
+            <input id="pair-code" class="input code-input" type="text" dir="ltr" inputmode="numeric"
+                   autocomplete="one-time-code" maxlength="6" placeholder="123456">
+          </label>
+          <p id="pair-error" class="form-error" role="alert"></p>
+          <button id="pair-submit" class="btn btn-primary btn-block" type="submit">اقتران الجهاز</button>
+          <button id="pair-scan" class="btn btn-ghost btn-block" type="button">مسح رمز QR</button>
+        </form>
+
+        <p class="hint">
+          افتح تطبيق سطح المكتب ← الإعدادات ← اقتران الجوال، ثم أدخل الرمز الظاهر
+          أو امسح رمز QR. الرمز صالح لمدة دقيقتين.
+        </p>
+        <p class="version" id="pair-version">الإصدار 2.0.0</p>
+      </div>
+    </section>
+
+    <div id="screen-app" class="app" hidden>
+      <header class="app-bar">
+        <div class="conn" title="حالة الاتصال">
+          <span id="conn-dot" class="dot"></span>
+          <span id="conn-text">غير متصل</span>
+        </div>
+        <h1 id="header-title">نقطة البيع</h1>
+        <button id="header-sync" class="icon-btn" type="button" aria-label="مزامنة الآن" title="مزامنة الآن">↻</button>
+      </header>
+
+      <main id="app-main" class="app-main">
+
+        <section id="tab-pos" class="panel" data-panel="pos">
+          <form id="barcode-form" class="scan-row" autocomplete="off">
+            <input id="barcode-input" class="input" type="text" dir="ltr" inputmode="numeric"
+                   placeholder="امسح الباركود هنا" aria-label="باركود المنتج">
+            <button id="pos-scan-btn" class="btn btn-icon" type="button" aria-label="فتح الماسح" title="ماسح">▣</button>
+          </form>
+
+          <input id="pos-search" class="input" type="search" placeholder="ابحث عن منتج بالاسم أو الباركود" aria-label="بحث المنتجات">
+          <div id="pos-categories" class="chips" role="group" aria-label="التصنيفات"></div>
+          <div id="product-grid" class="product-grid" aria-live="polite"></div>
+
+          <section class="cart-card" aria-labelledby="cart-title">
+            <div class="card-head">
+              <h2 id="cart-title">السلة <span id="cart-count" class="badge">0</span></h2>
+              <button id="cart-clear" class="link-btn" type="button">تفريغ</button>
+            </div>
+            <div id="cart-lines" class="cart-lines"></div>
+            <div class="totals">
+              <div><span>المجموع</span><b id="cart-subtotal" class="money">0.00 د.م</b></div>
+              <div><span>الخصم</span><b id="cart-discount" class="money">0.00 د.م</b></div>
+              <div><span>الضريبة (TVA)</span><b id="cart-tva" class="money">0.00 د.م</b></div>
+              <div class="grand"><span>الإجمالي</span><b id="cart-total" class="money">0.00 د.م</b></div>
+            </div>
+            <div class="discount-row" role="group" aria-label="نسبة الخصم">
+              <span>خصم</span>
+              <button class="chip-btn is-active" type="button" data-discount="0">0%</button>
+              <button class="chip-btn" type="button" data-discount="10">10%</button>
+              <button class="chip-btn" type="button" data-discount="20">20%</button>
+              <button class="chip-btn" type="button" data-discount="50">50%</button>
+            </div>
+            <button id="checkout-btn" class="btn btn-primary btn-block" type="button" disabled>الدفع</button>
+          </section>
+        </section>
+
+        <section id="tab-products" class="panel" data-panel="products" hidden>
+          <div class="toolbar">
+            <input id="product-search" class="input" type="search" placeholder="بحث في المنتجات" aria-label="بحث المنتجات">
+            <button id="product-add" class="btn btn-primary" type="button">+ منتج</button>
+          </div>
+          <div id="product-admin-list" class="list"></div>
+        </section>
+
+        <section id="tab-customers" class="panel" data-panel="customers" hidden>
+          <div class="toolbar">
+            <input id="customer-search" class="input" type="search" placeholder="بحث في الزبائن" aria-label="بحث الزبائن">
+            <button id="customer-add" class="btn btn-primary" type="button">+ زبون</button>
+          </div>
+          <div id="customer-list" class="list"></div>
+        </section>
+
+        <section id="tab-reports" class="panel" data-panel="reports" hidden>
+          <div id="report-cards" class="stat-grid"></div>
+
+          <section class="card">
+            <div class="card-head">
+              <h2>المزامنة والاتصال</h2>
+              <button id="flush-queue" class="btn btn-small" type="button">إرسال المعلّق</button>
+            </div>
+            <div id="queue-info" class="stack"></div>
+            <button id="health-btn" class="btn btn-ghost btn-small" type="button">فحص الخادم</button>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h2>الصندوق</h2>
+              <button id="shift-btn" class="btn btn-small" type="button">إدارة</button>
+            </div>
+            <p id="shift-status" class="muted"></p>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h2>آخر المبيعات</h2></div>
+            <div id="recent-sales" class="list"></div>
+          </section>
+        </section>
+
+        <section id="tab-settings" class="panel" data-panel="settings" hidden>
+          <div id="settings-content"></div>
+        </section>
+
+      </main>
+
+      <nav class="tabbar" id="tabbar" aria-label="أقسام التطبيق">
+        <button class="tab is-active" type="button" data-tab="pos" aria-current="page">
+          <span class="tab-icon" aria-hidden="true">🛒</span><span>نقطة البيع</span>
+        </button>
+        <button class="tab" type="button" data-tab="products">
+          <span class="tab-icon" aria-hidden="true">📦</span><span>المنتجات</span>
+        </button>
+        <button class="tab" type="button" data-tab="customers">
+          <span class="tab-icon" aria-hidden="true">👥</span><span>الزبائن</span>
+        </button>
+        <button class="tab" type="button" data-tab="reports">
+          <span class="tab-icon" aria-hidden="true">📈</span><span>لوحة</span>
+        </button>
+        <button class="tab" type="button" data-tab="settings">
+          <span class="tab-icon" aria-hidden="true">⚙</span><span>الإعدادات</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Payment / split payment -->
+  <div class="modal" id="modal-payment" hidden>
+    <div class="modal-backdrop" data-close="modal-payment"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+      <header class="modal-head">
+        <h3 id="payment-title">إتمام البيع</h3>
+        <button class="icon-btn" type="button" data-close="modal-payment" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <div id="payment-summary" class="payment-summary"></div>
+        <label class="field">
+          <span>الزبون (مطلوب في البيع الآجل)</span>
+          <select id="pay-customer" class="input"></select>
+        </label>
+        <div class="pay-grid">
+          <label class="field"><span>نقدي</span>
+            <input id="pay-cash" class="input money-input" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+          </label>
+          <label class="field"><span>بطاقة</span>
+            <input id="pay-card" class="input money-input" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+          </label>
+          <label class="field"><span>آجل</span>
+            <input id="pay-credit" class="input money-input" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+          </label>
+        </div>
+        <div id="quick-cash" class="quick-cash" role="group" aria-label="مبالغ نقدية سريعة"></div>
+        <div class="payment-meta">
+          <div><span>الباقي للزبون</span><b id="pay-change" class="money">0.00 د.م</b></div>
+          <div><span>المتبقي</span><b id="pay-remaining" class="money">0.00 د.م</b></div>
+          <div><span>السعر بالريال</span><b id="pay-rial" class="money">0.00 ريال</b></div>
+        </div>
+        <p id="payment-error" class="form-error" role="alert"></p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-payment">إلغاء</button>
+        <button id="payment-confirm" class="btn btn-primary" type="button">تأكيد البيع</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Return -->
+  <div class="modal" id="modal-return" hidden>
+    <div class="modal-backdrop" data-close="modal-return"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="return-title">
+      <header class="modal-head">
+        <h3 id="return-title">إرجاع منتجات</h3>
+        <button class="icon-btn" type="button" data-close="modal-return" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <div id="return-summary" class="stack"></div>
+        <div id="return-items" class="return-items"></div>
+        <label class="field">
+          <span>سبب الإرجاع</span>
+          <input id="return-reason" class="input" type="text" maxlength="200" placeholder="مثال: منتج تالف">
+        </label>
+        <p id="return-error" class="form-error" role="alert"></p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-return">إلغاء</button>
+        <button id="return-confirm" class="btn btn-danger" type="button">تأكيد الإرجاع</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Product add/edit -->
+  <div class="modal" id="modal-product" hidden>
+    <div class="modal-backdrop" data-close="modal-product"></div>
+    <form id="product-form" class="modal-card" novalidate>
+      <header class="modal-head">
+        <h3 id="product-form-title">منتج جديد</h3>
+        <button class="icon-btn" type="button" data-close="modal-product" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <input id="pf-uuid" type="hidden">
+        <label class="field"><span>اسم المنتج *</span>
+          <input id="pf-name" class="input" type="text" maxlength="120" required>
+        </label>
+        <label class="field"><span>الباركود</span>
+          <div class="input-with-button">
+            <input id="pf-barcode" class="input" type="text" dir="ltr" inputmode="numeric">
+            <button id="pf-scan" class="btn btn-small" type="button">مسح / صورة</button>
+          </div>
+        </label>
+        <label class="field"><span>التصنيف</span>
+          <input id="pf-category" class="input" type="text" list="category-list" maxlength="80">
+          <datalist id="category-list"></datalist>
+        </label>
+        <div class="form-grid">
+          <label class="field"><span>سعر الشراء</span>
+            <input id="pf-cost" class="input" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+          </label>
+          <label class="field"><span>سعر البيع *</span>
+            <input id="pf-sell" class="input" type="number" min="0" step="0.01" inputmode="decimal" value="0" required>
+          </label>
+          <label class="field"><span>المخزون</span>
+            <input id="pf-stock" class="input" type="number" min="0" step="0.001" inputmode="decimal" value="0">
+          </label>
+          <label class="field"><span>الضريبة %</span>
+            <input id="pf-tva" class="input" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="20">
+          </label>
+        </div>
+        <label class="check-row">
+          <input id="pf-weighed" type="checkbox">
+          <span>منتج بالوزن (كمية عشرية)</span>
+        </label>
+        <p id="product-error" class="form-error" role="alert"></p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-product">إلغاء</button>
+        <button id="product-save" class="btn btn-primary" type="submit">حفظ المنتج</button>
+      </footer>
+    </form>
+  </div>
+
+  <!-- Customer add/edit -->
+  <div class="modal" id="modal-customer" hidden>
+    <div class="modal-backdrop" data-close="modal-customer"></div>
+    <form id="customer-form" class="modal-card" novalidate>
+      <header class="modal-head">
+        <h3 id="customer-form-title">زبون جديد</h3>
+        <button class="icon-btn" type="button" data-close="modal-customer" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <input id="cf-uuid" type="hidden">
+        <label class="field"><span>الاسم الكامل *</span>
+          <input id="cf-name" class="input" type="text" maxlength="120" required>
+        </label>
+        <label class="field"><span>الهاتف</span>
+          <input id="cf-phone" class="input" type="tel" dir="ltr" maxlength="30">
+        </label>
+        <label class="field"><span>العنوان</span>
+          <input id="cf-address" class="input" type="text" maxlength="200">
+        </label>
+        <label class="field"><span>سقف الدين (0 = بلا حد)</span>
+          <input id="cf-limit" class="input" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+        </label>
+        <label class="field"><span>ملاحظات</span>
+          <textarea id="cf-notes" class="input" rows="2" maxlength="400"></textarea>
+        </label>
+        <p id="customer-error" class="form-error" role="alert"></p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-customer">إلغاء</button>
+        <button id="customer-save" class="btn btn-primary" type="submit">حفظ الزبون</button>
+      </footer>
+    </form>
+  </div>
+
+  <!-- Customer statement -->
+  <div class="modal" id="modal-statement" hidden>
+    <div class="modal-backdrop" data-close="modal-statement"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="statement-title">
+      <header class="modal-head">
+        <h3 id="statement-title">كشف حساب</h3>
+        <button class="icon-btn" type="button" data-close="modal-statement" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body" id="statement-body"></div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-statement">إغلاق</button>
+        <button id="statement-payment" class="btn btn-primary" type="button">تسجيل دفعة</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Debt payment -->
+  <div class="modal" id="modal-debt" hidden>
+    <div class="modal-backdrop" data-close="modal-debt"></div>
+    <form id="debt-form" class="modal-card modal-card-small" novalidate>
+      <header class="modal-head">
+        <h3 id="debt-title">تسجيل دفعة</h3>
+        <button class="icon-btn" type="button" data-close="modal-debt" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <input id="debt-customer" type="hidden">
+        <label class="field"><span>المبلغ *</span>
+          <input id="debt-amount" class="input" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+        </label>
+        <label class="field"><span>طريقة الدفع</span>
+          <select id="debt-method" class="input">
+            <option value="cash">نقدي</option>
+            <option value="card">بطاقة</option>
+          </select>
+        </label>
+        <label class="field"><span>ملاحظات</span>
+          <input id="debt-notes" class="input" type="text" maxlength="200">
+        </label>
+        <p id="debt-error" class="form-error" role="alert"></p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-debt">إلغاء</button>
+        <button id="debt-save" class="btn btn-primary" type="submit">حفظ الدفعة</button>
+      </footer>
+    </form>
+  </div>
+
+  <!-- Shift info (desktop-only) -->
+  <div class="modal" id="modal-shift" hidden>
+    <div class="modal-backdrop" data-close="modal-shift"></div>
+    <div class="modal-card modal-card-small" role="dialog" aria-modal="true" aria-labelledby="shift-title">
+      <header class="modal-head">
+        <h3 id="shift-title">الصندوق والوردية</h3>
+        <button class="icon-btn" type="button" data-close="modal-shift" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body" id="shift-body"></div>
+      <footer class="modal-foot">
+        <button class="btn btn-ghost" type="button" data-close="modal-shift">إغلاق</button>
+        <button id="shift-ping" class="btn btn-primary" type="button">فحص الخادم</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Camera / file scanner -->
+  <div class="modal" id="modal-scan" hidden>
+    <div class="modal-backdrop" data-close="modal-scan"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="scan-title">
+      <header class="modal-head">
+        <h3 id="scan-title">مسح الرمز</h3>
+        <button class="icon-btn" type="button" data-close="modal-scan" aria-label="إغلاق">×</button>
+      </header>
+      <div class="modal-body">
+        <div id="scan-viewport" class="scan-viewport"></div>
+        <label class="btn btn-ghost btn-block file-btn">
+          اختيار صورة للرمز
+          <input id="scan-file" type="file" accept="image/*" hidden>
+        </label>
+        <p class="muted">وجّه الكاميرا نحو رمز QR أو الباركود. يمكنك أيضاً اختيار صورة من الجهاز.</p>
+      </div>
+      <footer class="modal-foot">
+        <button id="scan-cancel" class="btn btn-ghost" type="button" data-close="modal-scan">إلغاء</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./vendor/html5-qrcode.min.js"></script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
