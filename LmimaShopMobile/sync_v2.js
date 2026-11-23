@@ -89,13 +89,16 @@ async function fetchDeltaSync(host, forceRetryWithPairing = true) {
       if (typeof applySyncData === 'function') {
         applySyncData(delta, true);
       }
+      // اللقطة الكاملة لا تحتوي المحذوفات، لذلك نستبدل النسخة المحلية بدل الدمج،
+      // وإلا تعود المنتجات/الزبائن المحذوفون عند إعادة بناء الحالة من IndexedDB.
+      // (المخزنان يُملآن من الخادم فقط؛ عمليات الهاتف غير المرسلة محفوظة في offline_queue)
       const prods = delta.Products || delta.products;
       if (prods && Array.isArray(prods) && prods.length > 0) {
-        try { await IDB.putBatch('products', prods); } catch (e) {}
+        try { await IDB.replaceAll('products', prods.filter(p => p && p.uuid)); } catch (e) {}
       }
       const custs = delta.Customers || delta.customers;
       if (custs && Array.isArray(custs) && custs.length > 0) {
-        try { await IDB.putBatch('customers', custs); } catch (e) {}
+        try { await IDB.replaceAll('customers', custs.filter(c => c && c.uuid)); } catch (e) {}
       }
       if (typeof updateServerStatus === 'function') {
         updateServerStatus(true, `متصل ومُحدث (${new Date().toLocaleTimeString('fr-FR')})`);

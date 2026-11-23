@@ -84,6 +84,19 @@ const IDB = {
     });
   },
 
+  // يستبدل محتوى المخزن كاملاً في معاملة واحدة (لا يبقى المخزن فارغاً إن فشلت الكتابة)
+  async replaceAll(storeName, items) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      store.clear();
+      (items || []).forEach(i => store.put(i));
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  },
+
   async delete(storeName, key) {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(storeName, 'readwrite');

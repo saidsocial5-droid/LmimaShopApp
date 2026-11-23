@@ -590,8 +590,10 @@ namespace LmimaShopApp
                     }
                     else
                     {
-                        query = "INSERT INTO Products (Barcode, ProductName, Category, SubCategory, PurchasePrice, SellPrice, StockQuantity, ImagePath) " +
-                                "VALUES (@barcode, @name, @category, @subcategory, @purchase, @sell, @stock, @imagePath)";
+                        // الباركود فريد في القاعدة: إن وُجد منتج محذوف (حذف ناعم) بنفس الباركود نعيد تفعيله بدل الإدراج
+                        query = "UPDATE Products SET ProductName = @name, Category = @category, SubCategory = @subcategory, " +
+                                "PurchasePrice = @purchase, SellPrice = @sell, StockQuantity = @stock, ImagePath = @imagePath, deleted_at = NULL " +
+                                "WHERE Barcode = @barcode AND deleted_at IS NOT NULL";
                     }
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -610,7 +612,13 @@ namespace LmimaShopApp
                             cmd.Parameters.AddWithValue("@id", editingProductId);
                         }
 
-                        cmd.ExecuteNonQuery();
+                        int affected = cmd.ExecuteNonQuery();
+                        if (!isEditModeProduct && affected == 0)
+                        {
+                            cmd.CommandText = "INSERT INTO Products (Barcode, ProductName, Category, SubCategory, PurchasePrice, SellPrice, StockQuantity, ImagePath) " +
+                                              "VALUES (@barcode, @name, @category, @subcategory, @purchase, @sell, @stock, @imagePath)";
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     MessageBox.Show("تم حفظ بيانات المنتج بنجاح!", "تم العملية", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -674,7 +682,7 @@ namespace LmimaShopApp
         {
             if (sender is Button btn && btn.DataContext is Product product)
             {
-                MessageBoxResult result = MessageBox.Show($"هل تود حذف المنتج '{product.ProductName}' نهائياً من المخازن؟", "تأكيد الحذف", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                MessageBoxResult result = MessageBox.Show($"هل تود حذف المنتج '{product.ProductName}' من المخازن؟", "تأكيد الحذف", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
 
                 using (MySqlConnection conn = dbHelper.GetConnection())
@@ -682,7 +690,8 @@ namespace LmimaShopApp
                     try
                     {
                         conn.Open();
-                        string query = "DELETE FROM Products WHERE Id = @id";
+                        // حذف ناعم: يبقى السجل لتاريخ المبيعات ولكي تعلم الهواتف بالحذف عند المزامنة
+                        string query = "UPDATE Products SET deleted_at = UTC_TIMESTAMP(3) WHERE Id = @id";
                         using (MySqlCommand cmd = new MySqlCommand(query, conn))
                         {
                             cmd.Parameters.AddWithValue("@id", product.Id);
@@ -1237,13 +1246,14 @@ namespace LmimaShopApp
                             {
                                 if (imageIdx != -1 && hasImage)
                                 {
+                                    // deleted_at = NULL: استيراد منتج محذوف سابقاً يعيد تفعيله
                                     query = "UPDATE Products SET ProductName = @name, Category = @category, " +
-                                            "PurchasePrice = @purchase, SellPrice = @sell, StockQuantity = @stock, ImagePath = @imagePath WHERE Barcode = @barcode";
+                                            "PurchasePrice = @purchase, SellPrice = @sell, StockQuantity = @stock, ImagePath = @imagePath, deleted_at = NULL WHERE Barcode = @barcode";
                                 }
                                 else
                                 {
                                     query = "UPDATE Products SET ProductName = @name, Category = @category, " +
-                                            "PurchasePrice = @purchase, SellPrice = @sell, StockQuantity = @stock WHERE Barcode = @barcode";
+                                            "PurchasePrice = @purchase, SellPrice = @sell, StockQuantity = @stock, deleted_at = NULL WHERE Barcode = @barcode";
                                 }
                                 updatedCount++;
                             }

@@ -319,7 +319,7 @@ namespace LmimaShopApp
                 decimal dueBalance = customer.DueBalance;
                 if (id == 1) return; // الحماية المزدوجة
 
-                MessageBoxResult result = MessageBox.Show($"هل تود حذف الزبون '{fullName}' نهائياً؟", "تأكيد الحذف", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                MessageBoxResult result = MessageBox.Show($"هل تود حذف الزبون '{fullName}'؟", "تأكيد الحذف", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
 
                 using (MySqlConnection conn = dbHelper.GetConnection())
@@ -327,7 +327,8 @@ namespace LmimaShopApp
                     try
                     {
                         conn.Open();
-                        string query = "DELETE FROM Customers WHERE Id = @id";
+                        // حذف ناعم: يبقى السجل لتاريخ المبيعات والديون ولكي تعلم الهواتف بالحذف عند المزامنة
+                        string query = "UPDATE Customers SET deleted_at = UTC_TIMESTAMP(3) WHERE Id = @id";
                         using (MySqlCommand cmd = new MySqlCommand(query, conn))
                         {
                             cmd.Parameters.AddWithValue("@id", id);
@@ -1372,7 +1373,8 @@ namespace LmimaShopApp
                     }
                     else
                     {
-                        query = "INSERT INTO Customers (FullName, Phone, ICE, CreditLimit, AllowCredit, DueBalance, InvoiceCount, CreditPeriodType, CreditPeriodDays) VALUES (@name, @phone, @ice, @credit, @allow, 0.00, 0, @type, @days)";
+                        // الاسم فريد في القاعدة: إن وُجد زبون محذوف (حذف ناعم) بنفس الاسم نعيد تفعيله بدل الإدراج (يبقى رصيد دينه القديم كما هو)
+                        query = "UPDATE Customers SET Phone = @phone, ICE = @ice, CreditLimit = @credit, AllowCredit = @allow, CreditPeriodType = @type, CreditPeriodDays = @days, deleted_at = NULL WHERE FullName = @name AND deleted_at IS NOT NULL";
                     }
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -1389,7 +1391,12 @@ namespace LmimaShopApp
                             cmd.Parameters.AddWithValue("@id", editingCustomerId);
                         }
 
-                        cmd.ExecuteNonQuery();
+                        int affected = cmd.ExecuteNonQuery();
+                        if (!isEditMode && affected == 0)
+                        {
+                            cmd.CommandText = "INSERT INTO Customers (FullName, Phone, ICE, CreditLimit, AllowCredit, DueBalance, InvoiceCount, CreditPeriodType, CreditPeriodDays) VALUES (@name, @phone, @ice, @credit, @allow, 0.00, 0, @type, @days)";
+                            cmd.ExecuteNonQuery();
+                        }
                     }
 
                     MessageBox.Show("تم حفظ بيانات الزبون بنجاح!", "تم العملية", MessageBoxButton.OK, MessageBoxImage.Information);

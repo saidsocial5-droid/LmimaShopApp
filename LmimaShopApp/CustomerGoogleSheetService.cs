@@ -115,6 +115,7 @@ namespace LmimaShopApp
                             SELECT Id, FullName, Phone, CreditLimit, DueBalance, AllowCredit, 
                                    InvoiceCount, CreditPeriodType, CreditPeriodDays, LastCreditDate
                             FROM Customers
+                            WHERE deleted_at IS NULL
                             ORDER BY DueBalance DESC, FullName ASC;";
 
                         using (var cmd = new MySqlCommand(query, conn))
