@@ -77,7 +77,8 @@ namespace LmimaShopApp
             File.WriteAllBytes(TokenFile, enc);
         }
 
-        public static bool IsConfigured => !string.IsNullOrWhiteSpace(Repository) && !string.IsNullOrWhiteSpace(GetToken());
+        // المستودع عام: المفتاح اختياري (يرفع حد طلبات GitHub ويسمح بمستودع خاص إن وُجد)
+        public static bool IsConfigured => !string.IsNullOrWhiteSpace(Repository);
 
         #endregion
 
@@ -118,7 +119,7 @@ namespace LmimaShopApp
             if (_timer != null) return;
             if (!IsConfigured)
             {
-                Log.Information("Auto-update disabled: no repository/token configured");
+                Log.Information("Auto-update disabled: no repository configured");
                 return;
             }
             _timer = new Timer(_ => _ = CheckForUpdatesAsync(interactive: false), null, TimeSpan.FromSeconds(45), CheckInterval);
@@ -134,7 +135,7 @@ namespace LmimaShopApp
             {
                 if (!IsConfigured)
                 {
-                    if (interactive) ShowMessage("التحديث التلقائي غير مفعّل: لم يتم إعداد مستودع GitHub أو مفتاح القراءة.", MessageBoxImage.Warning);
+                    if (interactive) ShowMessage("التحديث التلقائي غير مفعّل: لم يتم إعداد مستودع GitHub.", MessageBoxImage.Warning);
                     return;
                 }
 
@@ -186,7 +187,9 @@ namespace LmimaShopApp
         {
             var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
             http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("LmimaShopApp", AppVersion.Current));
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GetToken());
+            string token = GetToken();
+            if (!string.IsNullOrWhiteSpace(token))
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             http.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
             return http;
         }

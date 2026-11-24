@@ -16,7 +16,7 @@ The folder holds **two separate generations**. Before you edit anything, work ou
 | Embedded server | port 8080 (raw `TcpListener`), SignalR on 8081 | port 8090 (`HttpListener` + SSE) |
 | Docs | `README.md`, `SYSTEM_ARCHITECTURE.md`, `FEATURES_BASELINE.md` | `LmimaShopV2/README.md`, `docs/ARCHITECTURE.md`, `docs/API_SPEC.md` |
 
-`FEATURES_BASELINE.md` lists every V1 feature that must survive refactors. The repository is pushed to a private GitHub repo; `.gitignore` keeps shop data (`settings.json`, `lmima_mobile_sync.*`, `ProductImages/`, backups, APKs) out of it — keep it that way. `Backups/`, `BackupScripts/`, `Temp*/`, `LmimaShopApk_temp/`, `TranscriptReader/`, `ProductImages/`, and the `*.apk`/`*.zip` files at the root are artifacts or one-off tools, not source.
+`FEATURES_BASELINE.md` lists every V1 feature that must survive refactors. The repository is pushed to a **public** GitHub repo (`saidsocial5-droid/LmimaShopApp`), so never commit secrets; `.gitignore` keeps shop data (`settings.json`, `lmima_mobile_sync.*`, `ProductImages/`, backups, APKs) out of it — keep it that way. `Backups/`, `BackupScripts/`, `Temp*/`, `LmimaShopApk_temp/`, `TranscriptReader/`, `ProductImages/`, and the `*.apk`/`*.zip` files at the root are artifacts or one-off tools, not source.
 
 There are no automated tests and no linter configured in either generation.
 
@@ -29,7 +29,7 @@ dotnet publish LmimaShopApp/LmimaShopApp.csproj -c Release -r win-x64 --self-con
 ```
 Building Debug writes into `LmimaShopApp\bin\Debug\net10.0-windows\`, which is the folder the shop actually runs from (it holds the live `settings.json`, `ProductImages/`, `LmimaShop.apk`). Build to `-o <temp dir>` when you only want to check compilation.
 
-Releases: push a tag `vX.Y.Z`. `.github/workflows/build.yml` publishes the desktop zip, builds the APK (`python build_apk.py --version X.Y.Z --out out`), writes `SHA256SUMS.txt`, and creates a GitHub Release. The repo secret `UPDATE_READ_TOKEN` (fine-grained PAT, Contents: read-only on this repo) is embedded into the exe as assembly metadata so the installed app can read the private releases.
+Releases: push a tag `vX.Y.Z`. `.github/workflows/build.yml` publishes the desktop zip, builds the APK (`python build_apk.py --version X.Y.Z --out out`), writes `SHA256SUMS.txt`, and creates a GitHub Release. The repo is public, so `UpdateService` reads releases without a token and CI embeds none (a token embedded in a public release would leak). An optional token (`--set-update-token`, `LMIMA_UPDATE_TOKEN`) is still honoured if present.
 To build the installer, run Inno Setup on `LmimaShopApp.iss`.
 
 V1 APK: `python build_apk.py [--version X.Y.Z] [--out DIR]`. It copies `LmimaShopMobile/` into `ApkBuilderTools/template/assets` (never the `lmima_mobile_sync.*` customer-data files), stamps `CURRENT_APP_VERSION` in `app.js` and versionCode = major*10000+minor*100+patch, builds with `apktool.jar`, and signs with `uber-apk-signer.jar`'s embedded debug key. That key is the same everywhere, which is what lets phones install updates over the old app — don't switch signing keys. Without `--out` it copies the APK to the root, `Lmima Shop APK/` and `LmimaShopApp/bin/*`.

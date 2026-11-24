@@ -46,13 +46,11 @@ jobs:
 
     - name: Publish desktop app
       shell: pwsh
-      env:
-        UPDATE_READ_TOKEN: ${{ secrets.UPDATE_READ_TOKEN }}
+      # المستودع عام: لا يُدمج أي مفتاح في البرنامج (أي مفتاح مدمج يصبح مكشوفاً لكل من يحمّل الإصدار)
       run: |
         dotnet publish LmimaShopApp/LmimaShopApp.csproj -c Release -r win-x64 --self-contained false `
           -p:Version=${{ steps.ver.outputs.version }} `
           -p:UpdateRepo=${{ github.repository }} `
-          "-p:UpdateToken=$env:UPDATE_READ_TOKEN" `
           -o out/app
         # بيانات المتجر لا تُشحن أبداً مع التحديث
         Remove-Item out/app/settings.json, out/app/LmimaShop.apk -ErrorAction SilentlyContinue
