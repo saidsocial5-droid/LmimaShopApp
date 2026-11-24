@@ -48,7 +48,7 @@ ApkBuilderTools/template/assets/
 ApkBuilderTools/template/build/
 
 # ---------- مجلدات مؤقتة وملفات تجارب ----------
-Temp*/
+/Temp*/
 LmimaShopApk_temp/
 TranscriptReader/
 matches*.txt
